@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="ro">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<meta name="theme-color" content="#ffffff" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Iulian 1.0" />
+<title>Iulian 1.0</title>
+<style>
+:root{
+  --bg:#fff; --text:#101114; --muted:#687184; --line:#e8ebf0;
+  --shadow:0 8px 24px rgba(20,30,50,.07);
+  --red:#f8d8d9; --red-strong:#9f1d24;
+  --blue:#d8eaff; --blue-strong:#0b58b7;
+  --green:#d9f1e4; --green-strong:#087d45;
+  --purple:#e8ddff; --purple-strong:#6133b7;
+  --gray:#e9edf3; --gray-strong:#465066;
+  --yellow:#ffc928; --yellow-strong:#d89d00;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
+body{min-height:100vh}
+button,input,textarea{font:inherit}
+.app{width:min(100%,430px);min-height:100vh;margin:0 auto;padding:calc(env(safe-area-inset-top) + 20px) 18px calc(env(safe-area-inset-bottom) + 26px)}
+.header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin:8px 4px 24px}
+.title{font-size:38px;line-height:1;font-weight:850;letter-spacing:-1.4px;margin:0 0 10px}.date{font-size:17px;color:var(--muted);font-weight:500}
+.actions{display:flex;gap:10px}.icon-btn{width:46px;height:46px;border:1px solid #e1e5eb;background:#f2f4f7;border-radius:50%;display:grid;place-items:center;color:#344054;position:relative;cursor:pointer}
+.icon-btn svg{width:23px;height:23px;stroke-width:2}.badge-dot{position:absolute;right:-1px;top:-2px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#e9343f;color:white;font-size:12px;font-weight:800;display:grid;place-items:center;border:2px solid white}
+.cards{display:flex;flex-direction:column;gap:14px}.card{width:100%;border:1px solid rgba(30,40,60,.07);border-radius:26px;padding:18px 16px;display:grid;grid-template-columns:68px 1fr auto;align-items:center;gap:13px;box-shadow:var(--shadow);cursor:pointer;text-align:left;color:inherit;min-height:126px}
+.card.red{background:linear-gradient(135deg,#f7d2d4,#fff0f0)}.card.blue{background:linear-gradient(135deg,#cfe7ff,#eaf5ff)}.card.green{background:linear-gradient(135deg,#cfeede,#e9f8f0)}.card.purple{background:linear-gradient(135deg,#e1d2ff,#f2edff)}.card.gray{background:linear-gradient(135deg,#e4e9f0,#f5f7fa)}.card.yellow{background:linear-gradient(135deg,#ffc31d,#ffd94d);color:white;border:none}
+.card-icon{font-size:52px;line-height:1;filter:drop-shadow(0 5px 6px rgba(0,0,0,.12));text-align:center}.card h2{font-size:24px;margin:0 0 7px;font-weight:850;letter-spacing:-.5px}.card p{font-size:15px;line-height:1.35;margin:0;color:#536078}.card.yellow p{color:rgba(255,255,255,.94)}
+.card-meta{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:60px}.count{min-width:46px;height:42px;padding:0 12px;border-radius:999px;display:grid;place-items:center;font-size:22px;font-weight:850;background:rgba(255,255,255,.55)}.meta-label{font-size:12px;line-height:1.15;text-align:center;color:#566176;max-width:70px}.yellow .meta-label{color:white}.chev{font-size:34px;font-weight:300;line-height:1;color:#3e4a5f;margin-left:4px}.yellow .chev{color:white}
+.view{display:none}.view.active{display:block}.backbar{display:flex;align-items:center;gap:12px;margin:4px 0 20px}.back{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:#f4f6f8;font-size:26px;cursor:pointer}.page-title{font-size:31px;font-weight:850;letter-spacing:-.8px}.section{margin:18px 0 24px}.section-title{display:flex;justify-content:space-between;align-items:center;margin:0 2px 10px}.section-title h3{font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:#7a8495;margin:0}.plus{border:0;background:#111;color:#fff;border-radius:50%;width:34px;height:34px;font-size:24px;line-height:1;cursor:pointer}.panel{background:#f7f8fa;border:1px solid #e9ecf0;border-radius:22px;padding:16px;margin-bottom:10px}.row{display:flex;align-items:center;justify-content:space-between;gap:12px}.row-title{font-weight:750}.small{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.35}.status{font-size:12px;font-weight:800;padding:7px 10px;border-radius:999px;white-space:nowrap}.confirmed{background:#d8f4e4;color:#087844}.pending{background:#fff0b8;color:#8b6500}.tentative{background:#dbeaff;color:#245f9d}.cancelled{background:#ffe0e0;color:#a12828}.paid{background:#d8f4e4;color:#087844}.unpaid{background:#fff0b8;color:#8b6500}
+.legend{display:flex;gap:7px;flex-wrap:wrap;margin:4px 0 14px}.legend span{font-size:11px;padding:6px 9px;border-radius:999px;font-weight:700}
+.statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:#f6f7f9;border-radius:20px;padding:15px;border:1px solid #eaedf1}.stat strong{display:block;font-size:22px;margin-bottom:4px}.stat span{font-size:12px;color:var(--muted)}
+.idea-input{width:100%;min-height:130px;border:1px solid #e3e6eb;border-radius:20px;padding:15px;background:#fff;font-size:17px;resize:none;outline:none}.idea-input:focus{border-color:#e2b116;box-shadow:0 0 0 4px rgba(255,201,40,.18)}.save{width:100%;border:0;border-radius:18px;background:#ffc928;color:white;font-weight:850;padding:15px;font-size:17px;margin-top:10px;cursor:pointer}.idea{background:#fff9df;border:1px solid #ffe48a;border-radius:18px;padding:14px;margin:9px 0}.idea time{font-size:11px;color:#9a7b18}.idea p{margin:7px 0 0;white-space:pre-wrap}.empty{padding:24px;text-align:center;color:#8a93a2;border:1px dashed #d9dee6;border-radius:20px}
+.overlay{position:fixed;inset:0;background:rgba(20,24,32,.22);backdrop-filter:blur(8px);display:none;z-index:20;padding:calc(env(safe-area-inset-top) + 18px) 14px calc(env(safe-area-inset-bottom) + 18px)}.overlay.open{display:flex}.sheet{width:min(100%,430px);max-height:90vh;margin:auto;background:white;border-radius:28px;padding:18px;box-shadow:0 20px 70px rgba(0,0,0,.22);overflow:auto}.sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.sheet h3{font-size:25px;margin:0}.close{border:0;background:#eef1f4;border-radius:50%;width:38px;height:38px;font-size:21px;cursor:pointer}.searchbox{width:100%;border:1px solid #dfe4ea;background:#f5f7f9;border-radius:16px;padding:13px 14px;font-size:17px;outline:none}.result{padding:13px 2px;border-bottom:1px solid #edf0f3}.result:last-child{border-bottom:0}.result strong{display:block}.attention{display:flex;gap:12px;padding:13px 0;border-bottom:1px solid #edf0f3}.attention:last-child{border:0}.att-icon{font-size:24px}.att-text strong{display:block;font-size:15px}.att-text span{font-size:13px;color:var(--muted)}
+.demo-note{font-size:12px;color:#8a93a2;margin:8px 2px 0}
+@media (max-width:370px){.app{padding-left:13px;padding-right:13px}.title{font-size:34px}.card{grid-template-columns:58px 1fr auto;padding:15px 13px;min-height:116px}.card-icon{font-size:45px}.card h2{font-size:21px}.card p{font-size:14px}.count{min-width:40px;height:38px;font-size:19px}}
+@media (min-width:700px){body{background:#f2f4f7}.app{background:white;box-shadow:0 0 50px rgba(0,0,0,.08)}}
+</style>
+</head>
+<body>
+<main class="app">
+  <section id="home" class="view active">
+    <header class="header">
+      <div><h1 class="title">IULIAN 1.0</h1><div class="date" id="todayDate"></div></div>
+      <div class="actions">
+        <button class="icon-btn" aria-label="Caută" onclick="openSearch()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.6-3.6"></path></svg></button>
+        <button class="icon-btn" aria-label="Atenție" onclick="openAttention()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 21h4"></path></svg><span class="badge-dot">3</span></button>
+      </div>
+    </header>
+
+    <div class="cards">
+      <button class="card red" onclick="showPage('boghean')"><div class="card-icon">🎤</div><div><h2>BOGHEAN</h2><p>Concerte · Taskuri · Muzicieni · Transferuri</p></div><div class="card-meta"><span class="count" style="color:var(--red-strong)">3</span><span class="meta-label">evenimente următoare</span><span class="chev">›</span></div></button>
+      <button class="card blue" onclick="showPage('amtap')"><div class="card-icon">🎓</div><div><h2>AMTAP</h2><p>Examene · Studenți · Repertoriu · Taskuri</p></div><div class="card-meta"><span class="count" style="color:var(--blue-strong)">1</span><span class="meta-label">examen în curând</span><span class="chev">›</span></div></button>
+      <button class="card green" onclick="showPage('music')"><div class="card-icon">🥁</div><div><h2>MUZICĂ</h2><p>Concerte · Venituri · Proiecte · Statistici</p></div><div class="card-meta"><span class="count" style="color:var(--green-strong)">5</span><span class="meta-label">concerte luna aceasta</span><span class="chev">›</span></div></button>
+      <button class="card purple" onclick="showPage('printing')"><div class="card-icon">🖨️</div><div><h2>3D PRINTING</h2><p>Comenzi · Stoc · Taskuri · Vânzări</p></div><div class="card-meta"><span class="count" style="color:var(--purple-strong)">7</span><span class="meta-label">comenzi active</span><span class="chev">›</span></div></button>
+      <button class="card gray" onclick="showPage('personal')"><div class="card-icon">👤</div><div><h2>PERSONAL</h2><p>În dezvoltare · Spațiu personal</p></div><div class="card-meta"><span class="count" style="color:var(--gray-strong)">—</span><span class="meta-label">de definit</span><span class="chev">›</span></div></button>
+      <button class="card yellow" onclick="showPage('ideas')"><div class="card-icon">💡</div><div><h2>IDEAS</h2><p>Notează rapid ideile care apar în orice moment</p></div><div class="card-meta"><span class="count">+</span><span class="meta-label">idee nouă</span><span class="chev">›</span></div></button>
+    </div>
+  </section>
+
+  <section id="boghean" class="view">
+    <div class="backbar"><button class="back" onclick="home()">‹</button><div class="page-title">🎤 Boghean</div></div>
+    <div class="section"><div class="section-title"><h3>Upcoming events</h3><button class="plus">+</button></div>
+      <div class="legend"><span class="confirmed">● Confirmat</span><span class="pending">● În confirmare</span><span class="tentative">● Indecis</span><span class="cancelled">● Anulat</span></div>
+      <div class="panel"><div class="row"><div><div class="row-title">18 Oct · București</div><div class="small">Sala Palatului · Destin basarabean</div></div><span class="status confirmed">CONFIRMAT</span></div></div>
+      <div class="panel"><div class="row"><div><div class="row-title">20 Iun 2027 · RITual</div><div class="small">Bâlci contemporan · în așteptarea finanțării</div></div><span class="status pending">ÎN CONFIRMARE</span></div></div>
+    </div>
+    <div class="section"><div class="section-title"><h3>To do</h3><button class="plus">+</button></div><div class="panel"><div class="row"><div><div class="row-title">🔴 Critical</div><div class="small">Taskurile generale Boghean, ordonate după importanță.</div></div><span>›</span></div></div></div>
+    <div class="section"><div class="section-title"><h3>Muzicieni & patente</h3></div><div class="panel"><div class="row"><div><div class="row-title">Patente</div><div class="small">Nume Prenume · 01.01.2026 / 01.05.2026</div></div><span>›</span></div></div></div>
+    <div class="section"><div class="section-title"><h3>Transferuri</h3></div><div class="panel"><div class="row"><div><div class="row-title">Transferuri muzicieni</div><div class="small">De achitat · Achitat · Istoric</div></div><span>›</span></div></div></div>
+  </section>
+
+  <section id="amtap" class="view">
+    <div class="backbar"><button class="back" onclick="home()">‹</button><div class="page-title">🎓 AMTAP</div></div>
+    <div class="section"><div class="section-title"><h3>Următorul examen</h3><button class="plus">+</button></div><div class="panel"><div class="row"><div><div class="row-title">Adaugă graficul examenelor</div><div class="small">Data · tipul examenului · studenți · progres</div></div><span>›</span></div></div></div>
+    <div class="section"><div class="section-title"><h3>Studenți</h3><button class="plus">+</button></div>
+      <div class="panel"><div class="row"><div><div class="row-title">Dumitraș · Anul I</div><div class="small">Program curent · Istoric piese · Notes</div></div><span>›</span></div></div>
+      <div class="panel"><div class="row"><div><div class="row-title">Alexandr · Anul I</div><div class="small">Program curent · Istoric piese · Notes</div></div><span>›</span></div></div>
+      <div class="panel"><div class="row"><div><div class="row-title">Frei · Anul II</div><div class="small">Program curent · Istoric piese · Notes</div></div><span>›</span></div></div>
+    </div>
+    <p class="demo-note">Prototip: vom adăuga toți studenții și programele reale în baza de date.</p>
+  </section>
+
+  <section id="music" class="view">
+    <div class="backbar"><button class="back" onclick="home()">‹</button><div class="page-title">🥁 Muzică</div></div>
+    <div class="section"><div class="section-title"><h3>Septembrie 2026</h3><button class="plus">+</button></div>
+      <div class="statgrid"><div class="stat"><strong>5</strong><span>concerte</span></div><div class="stat"><strong>— MDL</strong><span>total luna aceasta</span></div><div class="stat"><strong>— MDL</strong><span>primit</span></div><div class="stat"><strong>— MDL</strong><span>de primit</span></div></div>
+    </div>
+    <div class="section"><div class="section-title"><h3>Concerte</h3></div>
+      <div class="panel"><div class="row"><div><div class="row-title">28 Sep · Concert</div><div class="small">Exemplu: 4.000 MDL · data încasării 04.10.2026</div></div><span class="status paid">PRIMIT</span></div></div>
+      <div class="panel"><div class="row"><div><div class="row-title">Adaugă concert</div><div class="small">Data concertului stabilește luna venitului.</div></div><span>＋</span></div></div>
+    </div>
+    <p class="demo-note">Regulă: venitul aparține lunii concertului; data încasării rămâne informativă.</p>
+  </section>
+
+  <section id="printing" class="view">
+    <div class="backbar"><button class="back" onclick="home()">‹</button><div class="page-title">🖨️ 3D Printing</div></div>
+    <div class="section"><div class="section-title"><h3>Comenzi active</h3><button class="plus">+</button></div><div class="panel"><div class="row"><div><div class="row-title">Nicio comandă reală încă</div><div class="small">Client · model · mărime · cantitate · status · plată</div></div><span>›</span></div></div></div>
+    <div class="section"><div class="section-title"><h3>Stoc muștiucuri</h3><button class="plus">+</button></div>
+      <div class="panel"><div class="row"><div><div class="row-title">Model / Mărime</div><div class="small">Stoc disponibil și prag minim</div></div><strong>—</strong></div></div>
+    </div>
+    <div class="section"><div class="section-title"><h3>To do</h3></div><div class="panel"><div class="row"><div><div class="row-title">Taskuri 3D Printing</div><div class="small">Design · print · finishing · stoc</div></div><span>›</span></div></div></div>
+  </section>
+
+  <section id="personal" class="view">
+    <div class="backbar"><button class="back" onclick="home()">‹</button><div class="page-title">👤 Personal</div></div>
+    <div class="empty">Personal rămâne intenționat simplu în v1.<br><br>Îl dezvoltăm când vedem ce categorii apar natural.</div>
+  </section>
+
+  <section id="ideas" class="view">
+    <div class="backbar"><button class="back" onclick="home()">‹</button><div class="page-title">💡 Ideas</div></div>
+    <div class="section"><div class="section-title"><h3>Idee nouă</h3></div><textarea id="ideaText" class="idea-input" placeholder="Ce ți-a venit în minte?"></textarea><button class="save" onclick="saveIdea()">SALVEAZĂ IDEEA</button></div>
+    <div class="section"><div class="section-title"><h3>Recente</h3></div><div id="ideaList"></div></div>
+  </section>
+</main>
+
+<div id="searchOverlay" class="overlay" onclick="overlayBg(event,'searchOverlay')"><div class="sheet"><div class="sheet-head"><h3>🔍 Search</h3><button class="close" onclick="closeOverlay('searchOverlay')">×</button></div><input id="searchInput" class="searchbox" placeholder="Boghean, Daraban, A7, București..." oninput="doSearch(this.value)"/><div id="searchResults"></div></div></div>
+<div id="attentionOverlay" class="overlay" onclick="overlayBg(event,'attentionOverlay')"><div class="sheet"><div class="sheet-head"><h3>🔔 Attention</h3><button class="close" onclick="closeOverlay('attentionOverlay')">×</button></div>
+  <div class="attention"><div class="att-icon">🪪</div><div class="att-text"><strong>Patente</strong><span>Vom afișa automat patentele care expiră curând.</span></div></div>
+  <div class="attention"><div class="att-icon">🎤</div><div class="att-text"><strong>Evenimente în confirmare</strong><span>RITual 2027 este în așteptare.</span></div></div>
+  <div class="attention"><div class="att-icon">💸</div><div class="att-text"><strong>Transferuri restante</strong><span>Aici vor apărea plățile care necesită atenție.</span></div></div>
+</div></div>
+
+<script>
+const roMonths=['ianuarie','februarie','martie','aprilie','mai','iunie','iulie','august','septembrie','octombrie','noiembrie','decembrie'];
+const roDays=['Duminică','Luni','Marți','Miercuri','Joi','Vineri','Sâmbătă'];
+function setDate(){const d=new Date(); document.getElementById('todayDate').textContent=`${roDays[d.getDay()]}, ${d.getDate()} ${roMonths[d.getMonth()]} ${d.getFullYear()}`}
+function showPage(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);if(id==='ideas'){renderIdeas();setTimeout(()=>document.getElementById('ideaText').focus(),120)}}
+function home(){showPage('home')}
+function openSearch(){document.getElementById('searchOverlay').classList.add('open');setTimeout(()=>document.getElementById('searchInput').focus(),100);doSearch('')}
+function openAttention(){document.getElementById('attentionOverlay').classList.add('open')}
+function closeOverlay(id){document.getElementById(id).classList.remove('open')}
+function overlayBg(e,id){if(e.target.id===id)closeOverlay(id)}
+const searchData=[
+ ['Boghean','Concerte · Taskuri · Muzicieni · Transferuri','boghean'],['București','18 Oct 2026 · Sala Palatului','boghean'],['RITual','20 Iun 2027 · în confirmare','boghean'],['Patente muzicieni','Valabilitate și expirări','boghean'],['Transferuri','Plăți către muzicieni','boghean'],
+ ['AMTAP','Examene · Studenți · Repertoriu','amtap'],['Dumitraș','Student · Anul I','amtap'],['Alexandr','Student · Anul I','amtap'],['Frei','Student · Anul II','amtap'],
+ ['Muzică','Concerte · Venituri · Statistici','music'],['28 septembrie','Concert · exemplu 4.000 MDL','music'],['3D Printing','Comenzi · Stoc · Taskuri','printing'],['Muștiucuri','Stoc 3D Printing','printing'],['Personal','Spațiu personal','personal'],['Ideas','Note rapide','ideas']
+];
+function doSearch(q){const el=document.getElementById('searchResults');const s=q.trim().toLowerCase();const items=(s?searchData.filter(x=>(x[0]+' '+x[1]).toLowerCase().includes(s)):searchData.slice(0,6));el.innerHTML=items.map(x=>`<div class="result" onclick="closeOverlay('searchOverlay');showPage('${x[2]}')"><strong>${x[0]}</strong><span class="small">${x[1]}</span></div>`).join('') || '<div class="empty" style="margin-top:14px">Nimic găsit.</div>'}
+function getIdeas(){try{return JSON.parse(localStorage.getItem('iulianIdeas')||'[]')}catch{return []}}
+function saveIdea(){const t=document.getElementById('ideaText');const text=t.value.trim();if(!text)return;const ideas=getIdeas();ideas.unshift({text,ts:new Date().toISOString()});localStorage.setItem('iulianIdeas',JSON.stringify(ideas));t.value='';renderIdeas()}
+function renderIdeas(){const el=document.getElementById('ideaList');const ideas=getIdeas();if(!ideas.length){el.innerHTML='<div class="empty">Încă nu ai idei salvate pe acest dispozitiv.</div>';return}el.innerHTML=ideas.map(i=>{const d=new Date(i.ts);return `<div class="idea"><time>${d.toLocaleString('ro-RO',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</time><p>${escapeHtml(i.text)}</p></div>`}).join('')}
+function escapeHtml(s){return s.replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+setDate();renderIdeas();
+</script>
+</body>
+</html>
