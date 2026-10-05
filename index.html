@@ -44,7 +44,7 @@ button,input,textarea{font:inherit}
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>\n</head>
 <body>
-<div id="authGate" class="overlay open" style="z-index:100;background:#fff;backdrop-filter:none"><div class="sheet" style="box-shadow:none"><div class="sheet-head"><h3>IULIAN 1.0</h3></div><p class="small" style="font-size:15px;margin-bottom:16px">Autentificare în spațiul tău personal</p><input id="loginEmail" class="searchbox" type="email" value="ursu95iu@gmail.com" autocomplete="username"><input id="loginPassword" class="searchbox" type="password" placeholder="Parola" autocomplete="current-password" style="margin-top:9px"><button class="save" onclick="login()">INTRĂ</button><div id="loginMsg" class="small" style="margin-top:10px"></div></div></div>
+<div id="authGate" style="display:none"><div class="sheet" style="box-shadow:none"><div class="sheet-head"><h3>IULIAN 1.0</h3></div><p class="small" style="font-size:15px;margin-bottom:16px">Autentificare în spațiul tău personal</p><input id="loginEmail" class="searchbox" type="email" value="ursu95iu@gmail.com" autocomplete="username"><input id="loginPassword" class="searchbox" type="password" placeholder="Parola" autocomplete="current-password" style="margin-top:9px"><button class="save" onclick="login()">INTRĂ</button><div id="loginMsg" class="small" style="margin-top:10px"></div></div></div>
 <main class="app">
   <section id="home" class="view active">
     <header class="header">
@@ -135,7 +135,7 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:t
 let concertCache=[],taskCache=[];
 
 async function login(){const email=document.getElementById('loginEmail').value.trim(),password=document.getElementById('loginPassword').value;const msg=document.getElementById('loginMsg');msg.textContent='Se conectează…';const {error}=await sb.auth.signInWithPassword({email,password});if(error){msg.textContent='Nu s-a putut conecta: '+error.message;return}password&&document.getElementById('loginPassword').value='';await startCloud()}
-async function startCloud(){const {data:{session}}=await sb.auth.getSession();if(!session){document.getElementById('authGate').classList.add('open');return}document.getElementById('authGate').classList.remove('open');await migrateLocalData();await Promise.all([loadConcerts(),loadTasks()])}
+async function startCloud(){document.getElementById('authGate').style.display='none';const {data:{session}}=await sb.auth.getSession();if(!session)return;await migrateLocalData();await Promise.all([loadConcerts(),loadTasks()])}
 async function migrateLocalData(){if(localStorage.getItem('iulianCloudMigrated')==='1')return;let lc=[],lt=[];try{lc=JSON.parse(localStorage.getItem('iulianConcerts')||'[]');lt=JSON.parse(localStorage.getItem('iulianBogheanTasks')||'[]')}catch{}
 if(lc.length){const rows=lc.map(x=>({concert_date:x.concert_date,city:x.city||null,venue:x.venue||null,event_name:x.event_name||null,status:x.status||'tentative',fee:Number(x.fee||0),received:Number(x.received||0),notes:x.notes||null,client_id:String(x.id)}));const {error}=await sb.from('concerts').upsert(rows,{onConflict:'owner_id,client_id',ignoreDuplicates:true});if(error){console.error(error);return}}
 if(lt.length){const rows=lt.map(x=>({task_name:x.name,status:x.status||'ongoing',client_id:String(x.id)}));const {error}=await sb.from('boghean_tasks').upsert(rows,{onConflict:'owner_id,client_id',ignoreDuplicates:true});if(error){console.error(error);return}}
