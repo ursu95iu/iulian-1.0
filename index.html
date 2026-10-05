@@ -86,8 +86,14 @@ button,input,textarea{font:inherit}
 
   <section id="amtap" class="view">
     <div class="backbar"><button class="back" onclick="home()">‹</button><div class="page-title">🎓 AMTAP</div></div>
-    <div class="section"><div class="section-title"><h3>Examene</h3><button class="plus">+</button></div><div class="empty">Niciun examen adăugat.</div></div>
-    <div class="section"><div class="section-title"><h3>Studenți</h3><button class="plus">+</button></div><div class="empty">Niciun student adăugat.</div></div>
+    <div class="section">
+      <div class="section-title"><h3>Examene</h3><button class="plus" onclick="openAmtapExamForm()">+</button></div>
+      <div id="amtapExamList"></div>
+    </div>
+    <div class="section">
+      <div class="section-title"><h3>Studenți</h3><button class="plus" onclick="openStudentForm()">+</button></div>
+      <div id="amtapStudentList"></div>
+    </div>
   </section>
 
   <section id="music" class="view">
@@ -116,6 +122,56 @@ button,input,textarea{font:inherit}
   </section>
 </main>
 
+<div id="amtapExamOverlay" class="overlay" onclick="overlayBg(event,'amtapExamOverlay')"><div class="sheet">
+  <div class="sheet-head"><h3 id="amtapExamFormTitle">Examen nou</h3><button class="close" onclick="closeOverlay('amtapExamOverlay')">×</button></div>
+  <input id="amtapExamId" type="hidden">
+  <input id="amtapExamDate" class="searchbox" type="date">
+  <select id="amtapExamSemester" class="searchbox" style="margin-top:9px"><option value="1">Semestrul 1</option><option value="2">Semestrul 2</option></select>
+  <select id="amtapExamType" class="searchbox" style="margin-top:9px"><option value="scales_studies">Game și studii</option><option value="exam_1">Examen 1</option><option value="exam_2">Examen 2</option></select>
+  <textarea id="amtapExamNotes" class="idea-input" placeholder="Note (opțional)" style="margin-top:9px;min-height:80px"></textarea>
+  <button class="save" onclick="saveAmtapExam()">SALVEAZĂ</button>
+  <button id="deleteAmtapExamBtn" class="save" style="background:#e9343f;display:none" onclick="deleteAmtapExam()">ȘTERGE EXAMENUL</button>
+</div></div>
+
+<div id="studentOverlay" class="overlay" onclick="overlayBg(event,'studentOverlay')"><div class="sheet">
+  <div class="sheet-head"><h3 id="studentFormTitle">Student nou</h3><button class="close" onclick="closeOverlay('studentOverlay')">×</button></div>
+  <input id="studentId" type="hidden">
+  <input id="studentName" class="searchbox" placeholder="Nume și prenume">
+  <select id="studentYear" class="searchbox" style="margin-top:9px">
+    <option value="1">Anul I</option><option value="2">Anul II</option><option value="3">Anul III</option><option value="4">Anul IV</option><option value="5">Anul V</option><option value="6">Anul VI</option>
+  </select>
+  <button class="save" onclick="saveStudent()">SALVEAZĂ PROFILUL</button>
+  <button id="deleteStudentBtn" class="save" style="background:#e9343f;display:none" onclick="deleteStudent()">ȘTERGE STUDENTUL</button>
+</div></div>
+
+<div id="studentProfileOverlay" class="overlay" onclick="overlayBg(event,'studentProfileOverlay')"><div class="sheet">
+  <div class="sheet-head"><h3 id="studentProfileTitle">Student</h3><button class="close" onclick="closeOverlay('studentProfileOverlay')">×</button></div>
+  <input id="profileStudentId" type="hidden">
+  <div id="studentProfileMeta" class="small" style="margin-bottom:16px"></div>
+
+  <div class="section" style="margin-top:0">
+    <div class="section-title"><h3>Semestrul 1 · Program</h3><button class="plus" onclick="openPieceForm(1)">+</button></div>
+    <div class="small" style="margin-bottom:8px">Game și studii · Examen 1 · Examen 2</div>
+    <div id="semester1Pieces"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title"><h3>Semestrul 2 · Program</h3><button class="plus" onclick="openPieceForm(2)">+</button></div>
+    <div class="small" style="margin-bottom:8px">Game și studii · Examen 1 · Examen 2</div>
+    <div id="semester2Pieces"></div>
+  </div>
+
+  <button class="save" style="background:#111" onclick="editCurrentStudent()">EDITEAZĂ PROFILUL</button>
+</div></div>
+
+<div id="pieceOverlay" class="overlay" onclick="overlayBg(event,'pieceOverlay')"><div class="sheet">
+  <div class="sheet-head"><h3 id="pieceFormTitle">Piesă nouă</h3><button class="close" onclick="closeOverlay('pieceOverlay')">×</button></div>
+  <input id="pieceId" type="hidden"><input id="pieceStudentId" type="hidden"><input id="pieceSemester" type="hidden">
+  <input id="pieceName" class="searchbox" placeholder="Denumirea piesei">
+  <button class="save" onclick="savePiece()">SALVEAZĂ PIESA</button>
+  <button id="deletePieceBtn" class="save" style="background:#e9343f;display:none" onclick="deletePiece()">ȘTERGE PIESA</button>
+</div></div>
+
 <div id="taskOverlay" class="overlay" onclick="overlayBg(event,'taskOverlay')"><div class="sheet"><div class="sheet-head"><h3 id="taskFormTitle">Task nou</h3><button class="close" onclick="closeOverlay('taskOverlay')">×</button></div><input id="taskId" type="hidden"><input id="taskName" class="searchbox" placeholder="Denumirea / taskul"><select id="taskStatus" class="searchbox" style="margin-top:9px"><option value="ongoing">Ongoing</option><option value="done">Done</option><option value="canceled">Canceled</option></select><button class="save" onclick="saveTask()">SALVEAZĂ</button><button id="deleteTaskBtn" class="save" style="background:#e9343f;display:none" onclick="deleteTask()">ȘTERGE TASKUL</button></div></div>
 <div id="concertOverlay" class="overlay" onclick="overlayBg(event,'concertOverlay')"><div class="sheet"><div class="sheet-head"><h3 id="concertFormTitle">Concert nou</h3><button class="close" onclick="closeOverlay('concertOverlay')">×</button></div><input id="concertId" type="hidden"><input id="concertDate" class="searchbox" type="date"><input id="concertCity" class="searchbox" placeholder="Oraș" style="margin-top:9px"><input id="concertVenue" class="searchbox" placeholder="Locație / sală" style="margin-top:9px"><input id="concertName" class="searchbox" placeholder="Denumirea evenimentului" style="margin-top:9px"><select id="concertStatus" class="searchbox" style="margin-top:9px"><option value="confirmed">Confirmat</option><option value="pending">În confirmare</option><option value="tentative">Indecis</option><option value="cancelled">Anulat</option></select><input id="concertFee" class="searchbox" type="number" inputmode="decimal" placeholder="Onorariu" style="margin-top:9px"><input id="concertReceived" class="searchbox" type="number" inputmode="decimal" placeholder="Primit" style="margin-top:9px"><textarea id="concertNotes" class="idea-input" placeholder="Note" style="margin-top:9px;min-height:90px"></textarea><button class="save" onclick="saveConcert()">SALVEAZĂ</button><button id="deleteConcertBtn" class="save" style="background:#e9343f;display:none" onclick="deleteConcert()">ȘTERGE CONCERTUL</button></div></div>
 <div id="searchOverlay" class="overlay" onclick="overlayBg(event,'searchOverlay')"><div class="sheet"><div class="sheet-head"><h3>🔍 Search</h3><button class="close" onclick="closeOverlay('searchOverlay')">×</button></div><input id="searchInput" class="searchbox" placeholder="Boghean, Daraban, A7, București..." oninput="doSearch(this.value)"/><div id="searchResults"></div></div></div>
@@ -133,9 +189,9 @@ async function initCloud(){
  cloudReady=!!session;
  document.getElementById('cloudPanel').style.display=cloudReady?'none':'block';
  if(cloudReady){
-   await Promise.all([loadConcerts(),loadTasks()]);
+   await Promise.all([loadConcerts(),loadTasks(),loadAmtapData()]);
  } else {
-   concertCache=[];taskCache=[];renderConcerts();renderTasks();
+   concertCache=[];taskCache=[];amtapExamCache=[];amtapStudentCache=[];amtapPieceCache=[];renderConcerts();renderTasks();renderAmtapExams();renderAmtapStudents();
  }
 }
 async function connectCloud(){
@@ -165,7 +221,8 @@ function updateHomeCounts(){
  const boghean=concertCache.filter(x=>x.status!=='cancelled'&&new Date(x.concert_date+'T12:00:00')>=today).length;
  const set=(id,n)=>{const el=document.getElementById(id);if(el)el.textContent=n};
  set('homeBogheanCount',boghean);
- set('homeAmtapCount',0);
+ const upcomingExams=amtapExamCache.filter(x=>new Date(x.exam_date+'T12:00:00')>=today).length;
+ set('homeAmtapCount',upcomingExams);
  set('homeMusicCount',0);
  set('homePrintingCount',0);
  set('homePersonalCount',0);
@@ -185,10 +242,89 @@ function openTaskForm(){document.getElementById('taskId').value='';document.getE
 function editTask(id){const x=taskCache.find(v=>String(v.id)===String(id));if(!x)return;document.getElementById('taskId').value=x.id;document.getElementById('taskName').value=x.name;document.getElementById('taskStatus').value=x.status;document.getElementById('taskFormTitle').textContent='Modifică task';document.getElementById('deleteTaskBtn').style.display='block';document.getElementById('taskOverlay').classList.add('open')}
 async function saveTask(){if(!cloudReady)return needCloud();const id=document.getElementById('taskId').value,name=document.getElementById('taskName').value.trim();if(!name)return alert('Scrie taskul.');const payload={task_name:name,status:document.getElementById('taskStatus').value};const q=id?sb.from('boghean_tasks').update(payload).eq('id',id):sb.from('boghean_tasks').insert(payload);const {error}=await q;if(error)return alert('Nu s-a salvat în cloud: '+error.message);closeOverlay('taskOverlay');await loadTasks();}
 async function deleteTask(){if(!cloudReady)return needCloud();const id=document.getElementById('taskId').value;if(!id||!confirm('Ștergi taskul?'))return;const {error}=await sb.from('boghean_tasks').delete().eq('id',id);if(error)return alert('Nu s-a șters din cloud: '+error.message);closeOverlay('taskOverlay');await loadTasks();}
+let amtapExamCache=[],amtapStudentCache=[],amtapPieceCache=[];
+async function loadAmtapData(){
+ if(!cloudReady){amtapExamCache=[];amtapStudentCache=[];amtapPieceCache=[];renderAmtapExams();renderAmtapStudents();updateHomeCounts();return}
+ const [exams,students,pieces]=await Promise.all([
+   sb.from('amtap_exams').select('*').order('exam_date'),
+   sb.from('amtap_students').select('*').order('full_name'),
+   sb.from('amtap_pieces').select('*').order('created_at')
+ ]);
+ if(exams.error||students.error||pieces.error){alert('Nu s-au încărcat datele AMTAP din cloud.');return}
+ amtapExamCache=exams.data||[];amtapStudentCache=students.data||[];amtapPieceCache=pieces.data||[];
+ renderAmtapExams();renderAmtapStudents();updateHomeCounts();
+}
+function renderAmtapExams(){
+ const el=document.getElementById('amtapExamList');if(!el)return;
+ if(!amtapExamCache.length){el.innerHTML='<div class="empty">Niciun examen adăugat. Apasă + pentru primul.</div>';return}
+ const labels={scales_studies:'Game și studii',exam_1:'Examen 1',exam_2:'Examen 2'};
+ el.innerHTML=amtapExamCache.map(x=>{const d=new Date(x.exam_date+'T12:00:00');const ds=d.toLocaleDateString('ro-RO',{day:'2-digit',month:'short',year:'numeric'});return '<div class="panel" onclick="editAmtapExam(\''+x.id+'\')"><div class="row"><div><div class="row-title">'+escapeHtml(ds+' · '+labels[x.exam_type])+'</div><div class="small">Semestrul '+x.semester+(x.notes?' · '+escapeHtml(x.notes):'')+'</div></div><span>›</span></div></div>'}).join('');
+}
+function openAmtapExamForm(){
+ document.getElementById('amtapExamId').value='';document.getElementById('amtapExamDate').value='';document.getElementById('amtapExamSemester').value='1';document.getElementById('amtapExamType').value='scales_studies';document.getElementById('amtapExamNotes').value='';document.getElementById('amtapExamFormTitle').textContent='Examen nou';document.getElementById('deleteAmtapExamBtn').style.display='none';document.getElementById('amtapExamOverlay').classList.add('open');
+}
+function editAmtapExam(id){
+ const x=amtapExamCache.find(v=>String(v.id)===String(id));if(!x)return;
+ document.getElementById('amtapExamId').value=x.id;document.getElementById('amtapExamDate').value=x.exam_date;document.getElementById('amtapExamSemester').value=String(x.semester);document.getElementById('amtapExamType').value=x.exam_type;document.getElementById('amtapExamNotes').value=x.notes||'';document.getElementById('amtapExamFormTitle').textContent='Modifică examen';document.getElementById('deleteAmtapExamBtn').style.display='block';document.getElementById('amtapExamOverlay').classList.add('open');
+}
+async function saveAmtapExam(){
+ if(!cloudReady)return needCloud();
+ const id=document.getElementById('amtapExamId').value;const exam_date=document.getElementById('amtapExamDate').value;if(!exam_date)return alert('Alege data examenului.');
+ const payload={exam_date,semester:Number(document.getElementById('amtapExamSemester').value),exam_type:document.getElementById('amtapExamType').value,notes:document.getElementById('amtapExamNotes').value.trim()||null};
+ const q=id?sb.from('amtap_exams').update(payload).eq('id',id):sb.from('amtap_exams').insert(payload);const {error}=await q;if(error)return alert('Nu s-a salvat examenul: '+error.message);closeOverlay('amtapExamOverlay');await loadAmtapData();
+}
+async function deleteAmtapExam(){
+ if(!cloudReady)return needCloud();const id=document.getElementById('amtapExamId').value;if(!id||!confirm('Ștergi examenul?'))return;
+ const {error}=await sb.from('amtap_exams').delete().eq('id',id);if(error)return alert('Nu s-a șters examenul: '+error.message);closeOverlay('amtapExamOverlay');await loadAmtapData();
+}
+function renderAmtapStudents(){
+ const el=document.getElementById('amtapStudentList');if(!el)return;
+ if(!amtapStudentCache.length){el.innerHTML='<div class="empty">Niciun student adăugat. Apasă + pentru primul.</div>';return}
+ const roman=['','I','II','III','IV','V','VI'];
+ el.innerHTML=amtapStudentCache.map(x=>{const n=amtapPieceCache.filter(p=>String(p.student_id)===String(x.id)).length;return '<div class="panel" onclick="openStudentProfile(\''+x.id+'\')"><div class="row"><div><div class="row-title">'+escapeHtml(x.full_name)+'</div><div class="small">Anul '+roman[x.study_year]+' · '+n+' '+(n===1?'piesă':'piese')+'</div></div><span>›</span></div></div>'}).join('');
+}
+function openStudentForm(){
+ document.getElementById('studentId').value='';document.getElementById('studentName').value='';document.getElementById('studentYear').value='1';document.getElementById('studentFormTitle').textContent='Student nou';document.getElementById('deleteStudentBtn').style.display='none';document.getElementById('studentOverlay').classList.add('open');
+}
+function editStudent(id){
+ const x=amtapStudentCache.find(v=>String(v.id)===String(id));if(!x)return;
+ document.getElementById('studentId').value=x.id;document.getElementById('studentName').value=x.full_name;document.getElementById('studentYear').value=String(x.study_year);document.getElementById('studentFormTitle').textContent='Modifică student';document.getElementById('deleteStudentBtn').style.display='block';document.getElementById('studentOverlay').classList.add('open');
+}
+async function saveStudent(){
+ if(!cloudReady)return needCloud();const id=document.getElementById('studentId').value;const full_name=document.getElementById('studentName').value.trim();if(!full_name)return alert('Scrie numele studentului.');
+ const payload={full_name,study_year:Number(document.getElementById('studentYear').value)};const q=id?sb.from('amtap_students').update(payload).eq('id',id):sb.from('amtap_students').insert(payload);const {error}=await q;if(error)return alert('Nu s-a salvat studentul: '+error.message);closeOverlay('studentOverlay');await loadAmtapData();if(id)openStudentProfile(id);
+}
+async function deleteStudent(){
+ if(!cloudReady)return needCloud();const id=document.getElementById('studentId').value;if(!id||!confirm('Ștergi studentul și programul lui?'))return;const {error}=await sb.from('amtap_students').delete().eq('id',id);if(error)return alert('Nu s-a șters studentul: '+error.message);closeOverlay('studentOverlay');closeOverlay('studentProfileOverlay');await loadAmtapData();
+}
+function openStudentProfile(id){
+ const x=amtapStudentCache.find(v=>String(v.id)===String(id));if(!x)return;const roman=['','I','II','III','IV','V','VI'];
+ document.getElementById('profileStudentId').value=x.id;document.getElementById('studentProfileTitle').textContent=x.full_name;document.getElementById('studentProfileMeta').textContent='Anul '+roman[x.study_year]+' · 2 semestre';
+ renderStudentPieces(x.id);document.getElementById('studentProfileOverlay').classList.add('open');
+}
+function renderStudentPieces(studentId){
+ [1,2].forEach(sem=>{const el=document.getElementById('semester'+sem+'Pieces');const rows=amtapPieceCache.filter(p=>String(p.student_id)===String(studentId)&&Number(p.semester)===sem);el.innerHTML=rows.length?rows.map(p=>'<div class="panel" onclick="editPiece(\''+p.id+'\')"><div class="row"><div class="row-title">'+escapeHtml(p.piece_name)+'</div><span>›</span></div></div>').join(''):'<div class="empty">Nicio piesă adăugată.</div>'});
+}
+function editCurrentStudent(){const id=document.getElementById('profileStudentId').value;closeOverlay('studentProfileOverlay');editStudent(id)}
+function openPieceForm(semester){
+ const studentId=document.getElementById('profileStudentId').value;if(!studentId)return;
+ document.getElementById('pieceId').value='';document.getElementById('pieceStudentId').value=studentId;document.getElementById('pieceSemester').value=semester;document.getElementById('pieceName').value='';document.getElementById('pieceFormTitle').textContent='Piesă · Semestrul '+semester;document.getElementById('deletePieceBtn').style.display='none';document.getElementById('pieceOverlay').classList.add('open');
+}
+function editPiece(id){
+ const p=amtapPieceCache.find(v=>String(v.id)===String(id));if(!p)return;
+ document.getElementById('pieceId').value=p.id;document.getElementById('pieceStudentId').value=p.student_id;document.getElementById('pieceSemester').value=p.semester;document.getElementById('pieceName').value=p.piece_name;document.getElementById('pieceFormTitle').textContent='Modifică piesa';document.getElementById('deletePieceBtn').style.display='block';document.getElementById('pieceOverlay').classList.add('open');
+}
+async function savePiece(){
+ if(!cloudReady)return needCloud();const id=document.getElementById('pieceId').value;const piece_name=document.getElementById('pieceName').value.trim();if(!piece_name)return alert('Scrie denumirea piesei.');
+ const payload={student_id:Number(document.getElementById('pieceStudentId').value),semester:Number(document.getElementById('pieceSemester').value),piece_name};const q=id?sb.from('amtap_pieces').update(payload).eq('id',id):sb.from('amtap_pieces').insert(payload);const {error}=await q;if(error)return alert('Nu s-a salvat piesa: '+error.message);closeOverlay('pieceOverlay');await loadAmtapData();openStudentProfile(payload.student_id);
+}
+async function deletePiece(){
+ if(!cloudReady)return needCloud();const id=document.getElementById('pieceId').value,studentId=document.getElementById('pieceStudentId').value;if(!id||!confirm('Ștergi piesa?'))return;const {error}=await sb.from('amtap_pieces').delete().eq('id',id);if(error)return alert('Nu s-a șters piesa: '+error.message);closeOverlay('pieceOverlay');await loadAmtapData();openStudentProfile(studentId);
+}
 const roMonths=['ianuarie','februarie','martie','aprilie','mai','iunie','iulie','august','septembrie','octombrie','noiembrie','decembrie'];
 const roDays=['Duminică','Luni','Marți','Miercuri','Joi','Vineri','Sâmbătă'];
 function setDate(){const d=new Date(); document.getElementById('todayDate').textContent=`${roDays[d.getDay()]}, ${d.getDate()} ${roMonths[d.getMonth()]} ${d.getFullYear()}`}
-function showPage(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);if(id==='ideas'){renderIdeas();setTimeout(()=>document.getElementById('ideaText').focus(),120)}}
+function showPage(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);if(id==='ideas'){renderIdeas();setTimeout(()=>document.getElementById('ideaText').focus(),120)}if(id==='amtap'&&cloudReady)loadAmtapData()}
 function home(){showPage('home')}
 function openSearch(){document.getElementById('searchOverlay').classList.add('open');setTimeout(()=>document.getElementById('searchInput').focus(),100);doSearch('')}
 function openAttention(){document.getElementById('attentionOverlay').classList.add('open')}
