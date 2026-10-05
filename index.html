@@ -51,7 +51,7 @@ button,input,textarea{font:inherit}
       <div><h1 class="title">IULIAN 1.0</h1><div class="date" id="todayDate"></div></div>
       <div class="actions">
         <button class="icon-btn" aria-label="Caută" onclick="openSearch()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.6-3.6"></path></svg></button>
-        <button class="icon-btn" aria-label="Atenție" onclick="openAttention()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 21h4"></path></svg><span class="badge-dot">3</span></button>
+        <button class="icon-btn" aria-label="Atenție" onclick="openAttention()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"></path><path d="M10 21h4"></path></svg></button>
       </div>
     </header>
 
@@ -64,10 +64,10 @@ button,input,textarea{font:inherit}
     </div>
 
     <div class="cards">
-      <button class="card red" onclick="showPage('boghean')"><div class="card-icon flip-horizontal">🎤</div><div><h2>BOGHEAN</h2><p>Concerte · Taskuri · Muzicieni · Transferuri</p></div><div class="card-meta"><span class="count" style="color:var(--red-strong)">3</span><span class="meta-label">evenimente următoare</span><span class="chev">›</span></div></button>
-      <button class="card blue" onclick="showPage('amtap')"><div class="card-icon flip-horizontal">🎓</div><div><h2>AMTAP</h2><p>Examene · Studenți · Repertoriu · Taskuri</p></div><div class="card-meta"><span class="count" style="color:var(--blue-strong)">1</span><span class="meta-label">examen în curând</span><span class="chev">›</span></div></button>
-      <button class="card green" onclick="showPage('music')"><div class="card-icon">🥁</div><div><h2>MUZICĂ</h2><p>Concerte · Venituri · Proiecte · Statistici</p></div><div class="card-meta"><span class="count" style="color:var(--green-strong)">5</span><span class="meta-label">concerte luna aceasta</span><span class="chev">›</span></div></button>
-      <button class="card purple" onclick="showPage('printing')"><div class="card-icon">🖨️</div><div><h2>3D PRINTING</h2><p>Comenzi · Stoc · Taskuri · Vânzări</p></div><div class="card-meta"><span class="count" style="color:var(--purple-strong)">7</span><span class="meta-label">comenzi active</span><span class="chev">›</span></div></button>
+      <button class="card red" onclick="showPage('boghean')"><div class="card-icon flip-horizontal">🎤</div><div><h2>BOGHEAN</h2><p>Concerte · Taskuri · Muzicieni · Transferuri</p></div><div class="card-meta"><span class="count" style="color:var(--red-strong)">0</span><span class="meta-label">evenimente</span><span class="chev">›</span></div></button>
+      <button class="card blue" onclick="showPage('amtap')"><div class="card-icon flip-horizontal">🎓</div><div><h2>AMTAP</h2><p>Examene · Studenți · Repertoriu · Taskuri</p></div><div class="card-meta"><span class="count" style="color:var(--blue-strong)">—</span><span class="meta-label">examene</span><span class="chev">›</span></div></button>
+      <button class="card green" onclick="showPage('music')"><div class="card-icon">🥁</div><div><h2>MUZICĂ</h2><p>Concerte · Venituri · Proiecte · Statistici</p></div><div class="card-meta"><span class="count" style="color:var(--green-strong)">0</span><span class="meta-label">concerte</span><span class="chev">›</span></div></button>
+      <button class="card purple" onclick="showPage('printing')"><div class="card-icon">🖨️</div><div><h2>3D PRINTING</h2><p>Comenzi · Stoc · Taskuri · Vânzări</p></div><div class="card-meta"><span class="count" style="color:var(--purple-strong)">0</span><span class="meta-label">comenzi</span><span class="chev">›</span></div></button>
       <button class="card gray" onclick="showPage('personal')"><div class="card-icon">👤</div><div><h2>PERSONAL</h2><p>În dezvoltare · Spațiu personal</p></div><div class="card-meta"><span class="count" style="color:var(--gray-strong)">—</span><span class="meta-label">de definit</span><span class="chev">›</span></div></button>
       <button class="card yellow" onclick="showPage('ideas')"><div class="card-icon">💡</div><div><h2>IDEAS</h2><p>Notează rapid ideile care apar în orice moment</p></div><div class="card-meta"><span class="count">+</span><span class="meta-label">idee nouă</span><span class="chev">›</span></div></button>
     </div>
@@ -80,40 +80,28 @@ button,input,textarea{font:inherit}
       <div id="concertList"></div>
     </div>
     <div class="section"><div class="section-title"><h3>To do</h3><button class="plus" onclick="openTaskForm()">+</button></div><div id="taskList"></div></div>
-    <div class="section"><div class="section-title"><h3>Muzicieni & patente</h3></div><div class="panel"><div class="row"><div><div class="row-title">Patente</div><div class="small">Nume Prenume · 01.01.2026 / 01.05.2026</div></div><span>›</span></div></div></div>
-    <div class="section"><div class="section-title"><h3>Transferuri</h3></div><div class="panel"><div class="row"><div><div class="row-title">Transferuri muzicieni</div><div class="small">De achitat · Achitat · Istoric</div></div><span>›</span></div></div></div>
+    <div class="section"><div class="section-title"><h3>Muzicieni & patente</h3></div><div class="empty">Nicio patentă adăugată.</div></div>
+    <div class="section"><div class="section-title"><h3>Transferuri</h3></div><div class="empty">Niciun transfer adăugat.</div></div>
   </section>
 
   <section id="amtap" class="view">
     <div class="backbar"><button class="back" onclick="home()">‹</button><div class="page-title">🎓 AMTAP</div></div>
-    <div class="section"><div class="section-title"><h3>Următorul examen</h3><button class="plus">+</button></div><div class="panel"><div class="row"><div><div class="row-title">Adaugă graficul examenelor</div><div class="small">Data · tipul examenului · studenți · progres</div></div><span>›</span></div></div></div>
-    <div class="section"><div class="section-title"><h3>Studenți</h3><button class="plus">+</button></div>
-      <div class="panel"><div class="row"><div><div class="row-title">Dumitraș · Anul I</div><div class="small">Program curent · Istoric piese · Notes</div></div><span>›</span></div></div>
-      <div class="panel"><div class="row"><div><div class="row-title">Alexandr · Anul I</div><div class="small">Program curent · Istoric piese · Notes</div></div><span>›</span></div></div>
-      <div class="panel"><div class="row"><div><div class="row-title">Frei · Anul II</div><div class="small">Program curent · Istoric piese · Notes</div></div><span>›</span></div></div>
-    </div>
-    <p class="demo-note">Prototip: vom adăuga toți studenții și programele reale în baza de date.</p>
+    <div class="section"><div class="section-title"><h3>Examene</h3><button class="plus">+</button></div><div class="empty">Niciun examen adăugat.</div></div>
+    <div class="section"><div class="section-title"><h3>Studenți</h3><button class="plus">+</button></div><div class="empty">Niciun student adăugat.</div></div>
   </section>
 
   <section id="music" class="view">
     <div class="backbar"><button class="back" onclick="home()">‹</button><div class="page-title">🥁 Muzică</div></div>
-    <div class="section"><div class="section-title"><h3>Septembrie 2026</h3><button class="plus">+</button></div>
-      <div class="statgrid"><div class="stat"><strong>5</strong><span>concerte</span></div><div class="stat"><strong>— MDL</strong><span>total luna aceasta</span></div><div class="stat"><strong>— MDL</strong><span>primit</span></div><div class="stat"><strong>— MDL</strong><span>de primit</span></div></div>
-    </div>
-    <div class="section"><div class="section-title"><h3>Concerte</h3></div>
-      <div class="panel"><div class="row"><div><div class="row-title">28 Sep · Concert</div><div class="small">Exemplu: 4.000 MDL · data încasării 04.10.2026</div></div><span class="status paid">PRIMIT</span></div></div>
-      <div class="panel"><div class="row"><div><div class="row-title">Adaugă concert</div><div class="small">Data concertului stabilește luna venitului.</div></div><span>＋</span></div></div>
-    </div>
-    <p class="demo-note">Regulă: venitul aparține lunii concertului; data încasării rămâne informativă.</p>
+    <div class="section"><div class="section-title"><h3>Concerte</h3><button class="plus">+</button></div><div class="empty">Niciun concert adăugat.</div></div>
   </section>
 
   <section id="printing" class="view">
     <div class="backbar"><button class="back" onclick="home()">‹</button><div class="page-title">🖨️ 3D Printing</div></div>
-    <div class="section"><div class="section-title"><h3>Comenzi active</h3><button class="plus">+</button></div><div class="panel"><div class="row"><div><div class="row-title">Nicio comandă reală încă</div><div class="small">Client · model · mărime · cantitate · status · plată</div></div><span>›</span></div></div></div>
+    <div class="section"><div class="section-title"><h3>Comenzi active</h3><button class="plus">+</button></div><div class="empty">Nicio comandă adăugată.</div></div>
     <div class="section"><div class="section-title"><h3>Stoc muștiucuri</h3><button class="plus">+</button></div>
-      <div class="panel"><div class="row"><div><div class="row-title">Model / Mărime</div><div class="small">Stoc disponibil și prag minim</div></div><strong>—</strong></div></div>
+      <div class="empty">Niciun produs în stoc.</div>
     </div>
-    <div class="section"><div class="section-title"><h3>To do</h3></div><div class="panel"><div class="row"><div><div class="row-title">Taskuri 3D Printing</div><div class="small">Design · print · finishing · stoc</div></div><span>›</span></div></div></div>
+    <div class="section"><div class="section-title"><h3>To do</h3></div><div class="empty">Niciun task adăugat.</div></div>
   </section>
 
   <section id="personal" class="view">
@@ -131,8 +119,7 @@ button,input,textarea{font:inherit}
 <div id="taskOverlay" class="overlay" onclick="overlayBg(event,'taskOverlay')"><div class="sheet"><div class="sheet-head"><h3 id="taskFormTitle">Task nou</h3><button class="close" onclick="closeOverlay('taskOverlay')">×</button></div><input id="taskId" type="hidden"><input id="taskName" class="searchbox" placeholder="Denumirea / taskul"><select id="taskStatus" class="searchbox" style="margin-top:9px"><option value="ongoing">Ongoing</option><option value="done">Done</option><option value="canceled">Canceled</option></select><button class="save" onclick="saveTask()">SALVEAZĂ</button><button id="deleteTaskBtn" class="save" style="background:#e9343f;display:none" onclick="deleteTask()">ȘTERGE TASKUL</button></div></div>
 <div id="concertOverlay" class="overlay" onclick="overlayBg(event,'concertOverlay')"><div class="sheet"><div class="sheet-head"><h3 id="concertFormTitle">Concert nou</h3><button class="close" onclick="closeOverlay('concertOverlay')">×</button></div><input id="concertId" type="hidden"><input id="concertDate" class="searchbox" type="date"><input id="concertCity" class="searchbox" placeholder="Oraș" style="margin-top:9px"><input id="concertVenue" class="searchbox" placeholder="Locație / sală" style="margin-top:9px"><input id="concertName" class="searchbox" placeholder="Denumirea evenimentului" style="margin-top:9px"><select id="concertStatus" class="searchbox" style="margin-top:9px"><option value="confirmed">Confirmat</option><option value="pending">În confirmare</option><option value="tentative">Indecis</option><option value="cancelled">Anulat</option></select><input id="concertFee" class="searchbox" type="number" inputmode="decimal" placeholder="Onorariu" style="margin-top:9px"><input id="concertReceived" class="searchbox" type="number" inputmode="decimal" placeholder="Primit" style="margin-top:9px"><textarea id="concertNotes" class="idea-input" placeholder="Note" style="margin-top:9px;min-height:90px"></textarea><button class="save" onclick="saveConcert()">SALVEAZĂ</button><button id="deleteConcertBtn" class="save" style="background:#e9343f;display:none" onclick="deleteConcert()">ȘTERGE CONCERTUL</button></div></div>
 <div id="searchOverlay" class="overlay" onclick="overlayBg(event,'searchOverlay')"><div class="sheet"><div class="sheet-head"><h3>🔍 Search</h3><button class="close" onclick="closeOverlay('searchOverlay')">×</button></div><input id="searchInput" class="searchbox" placeholder="Boghean, Daraban, A7, București..." oninput="doSearch(this.value)"/><div id="searchResults"></div></div></div>
-<div id="attentionOverlay" class="overlay" onclick="overlayBg(event,'attentionOverlay')"><div class="sheet"><div class="sheet-head"><h3>🔔 Attention</h3><button class="close" onclick="closeOverlay('attentionOverlay')">×</button></div>
-  <div class="attention"><div class="att-icon">🪪</div><div class="att-text"><strong>Patente</strong><span>Vom afișa automat patentele care expiră curând.</span></div></div>
+<div id="attentionOverlay" class="overlay" onclick="overlayBg(event,'attentionOverlay')"><div class="sheet"><div class="sheet-head"><h3>🔔 Attention</h3><button class="close" onclick="closeOverlay('attentionOverlay')">×</button></div><div class="empty">Nimic nu necesită atenție.</div></div></div>
   <div class="attention"><div class="att-icon">🎤</div><div class="att-text"><strong>Evenimente în confirmare</strong><span>RITual 2027 este în așteptare.</span></div></div>
   <div class="attention"><div class="att-icon">💸</div><div class="att-text"><strong>Transferuri restante</strong><span>Aici vor apărea plățile care necesită atenție.</span></div></div>
 </div></div>
@@ -197,9 +184,12 @@ function openAttention(){document.getElementById('attentionOverlay').classList.a
 function closeOverlay(id){document.getElementById(id).classList.remove('open')}
 function overlayBg(e,id){if(e.target.id===id)closeOverlay(id)}
 const searchData=[
- ['Boghean','Concerte · Taskuri · Muzicieni · Transferuri','boghean'],['București','18 Oct 2026 · Sala Palatului','boghean'],['RITual','20 Iun 2027 · în confirmare','boghean'],['Patente muzicieni','Valabilitate și expirări','boghean'],['Transferuri','Plăți către muzicieni','boghean'],
- ['AMTAP','Examene · Studenți · Repertoriu','amtap'],['Dumitraș','Student · Anul I','amtap'],['Alexandr','Student · Anul I','amtap'],['Frei','Student · Anul II','amtap'],
- ['Muzică','Concerte · Venituri · Statistici','music'],['28 septembrie','Concert · exemplu 4.000 MDL','music'],['3D Printing','Comenzi · Stoc · Taskuri','printing'],['Muștiucuri','Stoc 3D Printing','printing'],['Personal','Spațiu personal','personal'],['Ideas','Note rapide','ideas']
+ ['Boghean','Concerte · Taskuri · Muzicieni · Transferuri','boghean'],
+ ['AMTAP','Examene · Studenți · Repertoriu','amtap'],
+ ['Muzică','Concerte · Venituri · Proiecte','music'],
+ ['3D Printing','Comenzi · Stoc · Taskuri','printing'],
+ ['Personal','Spațiu personal','personal'],
+ ['Ideas','Note rapide','ideas']
 ];
 function doSearch(q){const el=document.getElementById('searchResults');const s=q.trim().toLowerCase();const items=(s?searchData.filter(x=>(x[0]+' '+x[1]).toLowerCase().includes(s)):searchData.slice(0,6));el.innerHTML=items.map(x=>`<div class="result" onclick="closeOverlay('searchOverlay');showPage('${x[2]}')"><strong>${x[0]}</strong><span class="small">${x[1]}</span></div>`).join('') || '<div class="empty" style="margin-top:14px">Nimic găsit.</div>'}
 function getIdeas(){try{return JSON.parse(localStorage.getItem('iulianIdeas')||'[]')}catch{return []}}
