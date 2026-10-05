@@ -112,7 +112,10 @@ button,input,textarea{font:inherit}
 
   <section id="personal" class="view">
     <div class="backbar"><button class="back" onclick="home()">‹</button><div class="page-title">👤 Personal</div></div>
-    <div class="empty">Personal rămâne intenționat simplu în v1.<br><br>Îl dezvoltăm când vedem ce categorii apar natural.</div>
+    <div style="min-height:55vh;display:flex;flex-direction:column;align-items:center;justify-content:center">
+      <div id="personalCounter" style="font-size:92px;font-weight:850;letter-spacing:-4px;line-height:1;margin-bottom:30px">0</div>
+      <button onclick="incrementPersonalCounter()" aria-label="Plus unu" style="width:112px;height:112px;border:0;border-radius:50%;background:#111;color:white;font-size:72px;font-weight:300;line-height:1;box-shadow:0 10px 28px rgba(0,0,0,.15);cursor:pointer">+</button>
+    </div>
   </section>
 
   <section id="ideas" class="view">
@@ -189,7 +192,7 @@ async function initCloud(){
  cloudReady=!!session;
  document.getElementById('cloudPanel').style.display=cloudReady?'none':'block';
  if(cloudReady){
-   await Promise.all([loadConcerts(),loadTasks(),loadAmtapData()]);
+   await Promise.all([loadConcerts(),loadTasks(),loadAmtapData(),loadPersonalCounter()]);
  } else {
    concertCache=[];taskCache=[];amtapExamCache=[];amtapStudentCache=[];amtapPieceCache=[];renderConcerts();renderTasks();renderAmtapExams();renderAmtapStudents();
  }
@@ -225,7 +228,7 @@ function updateHomeCounts(){
  set('homeAmtapCount',upcomingExams);
  set('homeMusicCount',0);
  set('homePrintingCount',0);
- set('homePersonalCount',0);
+ set('homePersonalCount',personalCount);
  set('homeIdeasCount',getIdeas().length);
 }
 function renderConcerts(){const el=document.getElementById('concertList');if(!concertCache.length){el.innerHTML='<div class="empty">Niciun concert. Apasă + pentru primul.</div>';return}el.innerHTML=concertCache.map(x=>{const d=new Date(x.concert_date+'T12:00:00');const ds=d.toLocaleDateString('ro-RO',{day:'2-digit',month:'short'});const labels={confirmed:'CONFIRMAT',pending:'ÎN CONFIRMARE',tentative:'INDECIS',cancelled:'ANULAT'};return '<div class="panel" onclick="editConcert(\''+x.id+'\')"><div class="row"><div><div class="row-title">'+escapeHtml(ds+(x.city?' · '+x.city:''))+'</div><div class="small">'+escapeHtml([x.venue,x.event_name].filter(Boolean).join(' · ')||'Fără detalii')+'</div></div><span class="status '+escapeHtml(x.status||'tentative')+'">'+(labels[x.status]||'INDECIS')+'</span></div></div>'}).join('');}
@@ -242,6 +245,21 @@ function openTaskForm(){document.getElementById('taskId').value='';document.getE
 function editTask(id){const x=taskCache.find(v=>String(v.id)===String(id));if(!x)return;document.getElementById('taskId').value=x.id;document.getElementById('taskName').value=x.name;document.getElementById('taskStatus').value=x.status;document.getElementById('taskFormTitle').textContent='Modifică task';document.getElementById('deleteTaskBtn').style.display='block';document.getElementById('taskOverlay').classList.add('open')}
 async function saveTask(){if(!cloudReady)return needCloud();const id=document.getElementById('taskId').value,name=document.getElementById('taskName').value.trim();if(!name)return alert('Scrie taskul.');const payload={task_name:name,status:document.getElementById('taskStatus').value};const q=id?sb.from('boghean_tasks').update(payload).eq('id',id):sb.from('boghean_tasks').insert(payload);const {error}=await q;if(error)return alert('Nu s-a salvat în cloud: '+error.message);closeOverlay('taskOverlay');await loadTasks();}
 async function deleteTask(){if(!cloudReady)return needCloud();const id=document.getElementById('taskId').value;if(!id||!confirm('Ștergi taskul?'))return;const {error}=await sb.from('boghean_tasks').delete().eq('id',id);if(error)return alert('Nu s-a șters din cloud: '+error.message);closeOverlay('taskOverlay');await loadTasks();}
+let personalCount=0;
+async function loadPersonalCounter(){
+ if(!cloudReady){personalCount=0;renderPersonalCounter();return}
+ const {data,error}=await sb.from('personal_counter').select('count').maybeSingle();
+ if(error){alert('Nu s-a încărcat contorul Personal.');return}
+ personalCount=data?Number(data.count||0):0;renderPersonalCounter();updateHomeCounts();
+}
+function renderPersonalCounter(){const el=document.getElementById('personalCounter');if(el)el.textContent=personalCount}
+async function incrementPersonalCounter(){
+ if(!cloudReady)return needCloud();
+ const next=personalCount+1;
+ const {error}=await sb.from('personal_counter').upsert({count:next},{onConflict:'owner_id'});
+ if(error)return alert('Nu s-a salvat contorul: '+error.message);
+ personalCount=next;renderPersonalCounter();updateHomeCounts();
+}
 let amtapExamCache=[],amtapStudentCache=[],amtapPieceCache=[];
 async function loadAmtapData(){
  if(!cloudReady){amtapExamCache=[];amtapStudentCache=[];amtapPieceCache=[];renderAmtapExams();renderAmtapStudents();updateHomeCounts();return}
@@ -324,7 +342,7 @@ async function deletePiece(){
 const roMonths=['ianuarie','februarie','martie','aprilie','mai','iunie','iulie','august','septembrie','octombrie','noiembrie','decembrie'];
 const roDays=['Duminică','Luni','Marți','Miercuri','Joi','Vineri','Sâmbătă'];
 function setDate(){const d=new Date(); document.getElementById('todayDate').textContent=`${roDays[d.getDay()]}, ${d.getDate()} ${roMonths[d.getMonth()]} ${d.getFullYear()}`}
-function showPage(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);if(id==='ideas'){renderIdeas();setTimeout(()=>document.getElementById('ideaText').focus(),120)}if(id==='amtap'&&cloudReady)loadAmtapData()}
+function showPage(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);if(id==='ideas'){renderIdeas();setTimeout(()=>document.getElementById('ideaText').focus(),120)}if(id==='amtap'&&cloudReady)loadAmtapData();if(id==='personal'&&cloudReady)loadPersonalCounter()}
 function home(){showPage('home')}
 function openSearch(){document.getElementById('searchOverlay').classList.add('open');setTimeout(()=>document.getElementById('searchInput').focus(),100);doSearch('')}
 function openAttention(){document.getElementById('attentionOverlay').classList.add('open')}
