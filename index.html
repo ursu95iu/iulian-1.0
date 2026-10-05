@@ -135,8 +135,11 @@ let cloudReady=false;
 async function initCloud(){
  const {data:{session}}=await sb.auth.getSession();
  cloudReady=!!session;
- if(cloudReady){await migrateLocalData();await Promise.all([loadConcerts(),loadTasks()]);}
- else {loadConcerts();loadTasks();}
+ if(cloudReady){
+   localStorage.removeItem('iulianCloudMigrated');
+   await migrateLocalData();
+   await Promise.all([loadConcerts(),loadTasks()]);
+ } else {loadConcerts();loadTasks();}
 }
 async function migrateLocalData(){
  if(localStorage.getItem('iulianCloudMigrated')==='1')return;
