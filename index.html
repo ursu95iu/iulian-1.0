@@ -42,6 +42,7 @@ button,input,textarea{font:inherit}
 @media (min-width:700px){body{background:#f2f4f7}.app{background:white;box-shadow:0 0 50px rgba(0,0,0,.08)}}
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <main class="app">
@@ -129,10 +130,25 @@ button,input,textarea{font:inherit}
 </div></div>
 
 <script>
+const sb=supabase.createClient('https://etnrgoszjbellwyzfpup.supabase.co','sb_publishable_xcb-Con8CDt1C-shj4xbzg_XvU8spUY',{auth:{persistSession:true,autoRefreshToken:true}});
+let cloudReady=false;
+async function initCloud(){
+ const {data:{session}}=await sb.auth.getSession();
+ cloudReady=!!session;
+ if(cloudReady){await migrateLocalData();await Promise.all([loadConcerts(),loadTasks()]);}
+ else {loadConcerts();loadTasks();}
+}
+async function migrateLocalData(){
+ if(localStorage.getItem('iulianCloudMigrated')==='1')return;
+ let lc=[],lt=[];try{lc=JSON.parse(localStorage.getItem('iulianConcerts')||'[]');lt=JSON.parse(localStorage.getItem('iulianBogheanTasks')||'[]')}catch{}
+ for(const x of lc){const {data}=await sb.from('concerts').select('id').eq('client_id',String(x.id)).maybeSingle();if(!data)await sb.from('concerts').insert({concert_date:x.concert_date,city:x.city||null,venue:x.venue||null,event_name:x.event_name||null,status:x.status||'tentative',fee:Number(x.fee||0),received:Number(x.received||0),notes:x.notes||null,client_id:String(x.id)})}
+ for(const x of lt){const {data}=await sb.from('boghean_tasks').select('id').eq('client_id',String(x.id)).maybeSingle();if(!data)await sb.from('boghean_tasks').insert({task_name:x.name,status:x.status||'ongoing',client_id:String(x.id)})}
+ localStorage.setItem('iulianCloudMigrated','1');
+}
 let concertCache=[];
 function getConcerts(){try{return JSON.parse(localStorage.getItem('iulianConcerts')||'[]')}catch{return []}}
 function storeConcerts(){localStorage.setItem('iulianConcerts',JSON.stringify(concertCache))}
-function loadConcerts(){concertCache=getConcerts().sort((a,b)=>(a.concert_date||'').localeCompare(b.concert_date||''));renderConcerts();}
+async function loadConcerts(){if(cloudReady){const {data,error}=await sb.from('concerts').select('*').order('concert_date');if(!error)concertCache=data||[];else concertCache=getConcerts()}else concertCache=getConcerts();concertCache.sort((a,b)=>(a.concert_date||'').localeCompare(b.concert_date||''));renderConcerts();}
 function renderConcerts(){const el=document.getElementById('concertList');if(!concertCache.length){el.innerHTML='<div class="empty">Niciun concert. Apasă + pentru primul.</div>';return}el.innerHTML=concertCache.map(x=>{const d=new Date(x.concert_date+'T12:00:00');const ds=d.toLocaleDateString('ro-RO',{day:'2-digit',month:'short'});const labels={confirmed:'CONFIRMAT',pending:'ÎN CONFIRMARE',tentative:'INDECIS',cancelled:'ANULAT'};return '<div class="panel" onclick="editConcert(\''+x.id+'\')"><div class="row"><div><div class="row-title">'+escapeHtml(ds+(x.city?' · '+x.city:''))+'</div><div class="small">'+escapeHtml([x.venue,x.event_name].filter(Boolean).join(' · ')||'Fără detalii')+'</div></div><span class="status '+escapeHtml(x.status||'tentative')+'">'+(labels[x.status]||'INDECIS')+'</span></div></div>'}).join('');}
 function openConcertForm(){['concertId','concertDate','concertCity','concertVenue','concertName','concertFee','concertReceived','concertNotes'].forEach(id=>document.getElementById(id).value='');document.getElementById('concertStatus').value='tentative';document.getElementById('concertFormTitle').textContent='Concert nou';document.getElementById('deleteConcertBtn').style.display='none';document.getElementById('concertOverlay').classList.add('open');}
 function editConcert(id){const x=concertCache.find(v=>String(v.id)===String(id));if(!x)return;document.getElementById('concertId').value=x.id;document.getElementById('concertDate').value=x.concert_date||'';document.getElementById('concertCity').value=x.city||'';document.getElementById('concertVenue').value=x.venue||'';document.getElementById('concertName').value=x.event_name||'';document.getElementById('concertStatus').value=x.status||'tentative';document.getElementById('concertFee').value=x.fee||'';document.getElementById('concertReceived').value=x.received||'';document.getElementById('concertNotes').value=x.notes||'';document.getElementById('concertFormTitle').textContent='Modifică concert';document.getElementById('deleteConcertBtn').style.display='block';document.getElementById('concertOverlay').classList.add('open');}
@@ -166,7 +182,7 @@ function getIdeas(){try{return JSON.parse(localStorage.getItem('iulianIdeas')||'
 function saveIdea(){const t=document.getElementById('ideaText');const text=t.value.trim();if(!text)return;const ideas=getIdeas();ideas.unshift({text,ts:new Date().toISOString()});localStorage.setItem('iulianIdeas',JSON.stringify(ideas));t.value='';renderIdeas()}
 function renderIdeas(){const el=document.getElementById('ideaList');const ideas=getIdeas();if(!ideas.length){el.innerHTML='<div class="empty">Încă nu ai idei salvate pe acest dispozitiv.</div>';return}el.innerHTML=ideas.map(i=>{const d=new Date(i.ts);return `<div class="idea"><time>${d.toLocaleString('ro-RO',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</time><p>${escapeHtml(i.text)}</p></div>`}).join('')}
 function escapeHtml(s){return s.replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
-setDate();renderIdeas();loadConcerts();loadTasks();
+setDate();renderIdeas();initCloud();
 </script>
 </body>
 </html>
