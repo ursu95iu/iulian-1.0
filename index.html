@@ -55,6 +55,14 @@ button,input,textarea{font:inherit}
       </div>
     </header>
 
+    <div id="cloudPanel" style="display:none;margin:0 0 14px;padding:14px;border:1px solid #e5e7eb;border-radius:16px;background:#f8fafc">
+      <div style="font-weight:700;font-size:15px;margin-bottom:6px">☁️ Cloud neconectat</div>
+      <div class="small" style="margin-bottom:10px">Conectează-te o singură dată pe acest dispozitiv.</div>
+      <input id="cloudPassword" class="searchbox" type="password" placeholder="Parola Supabase" autocomplete="current-password">
+      <button class="save" style="margin-top:9px" onclick="connectCloud()">CONECTEAZĂ CLOUD</button>
+      <div id="cloudMsg" class="small" style="margin-top:8px"></div>
+    </div>
+
     <div class="cards">
       <button class="card red" onclick="showPage('boghean')"><div class="card-icon flip-horizontal">🎤</div><div><h2>BOGHEAN</h2><p>Concerte · Taskuri · Muzicieni · Transferuri</p></div><div class="card-meta"><span class="count" style="color:var(--red-strong)">3</span><span class="meta-label">evenimente următoare</span><span class="chev">›</span></div></button>
       <button class="card blue" onclick="showPage('amtap')"><div class="card-icon flip-horizontal">🎓</div><div><h2>AMTAP</h2><p>Examene · Studenți · Repertoriu · Taskuri</p></div><div class="card-meta"><span class="count" style="color:var(--blue-strong)">1</span><span class="meta-label">examen în curând</span><span class="chev">›</span></div></button>
@@ -136,11 +144,23 @@ function needCloud(){alert('Cloud-ul nu este conectat pe acest dispozitiv. Datel
 async function initCloud(){
  const {data:{session}}=await sb.auth.getSession();
  cloudReady=!!session;
+ document.getElementById('cloudPanel').style.display=cloudReady?'none':'block';
  if(cloudReady){
-   localStorage.removeItem('iulianCloudMigrated');
-   await migrateLocalData();
    await Promise.all([loadConcerts(),loadTasks()]);
- } else {concertCache=[];taskCache=[];renderConcerts();renderTasks();}
+ } else {
+   concertCache=[];taskCache=[];renderConcerts();renderTasks();
+ }
+}
+async function connectCloud(){
+ const password=document.getElementById('cloudPassword').value;
+ const msg=document.getElementById('cloudMsg');
+ if(!password){msg.textContent='Introdu parola.';return}
+ msg.textContent='Se conectează…';
+ const {error}=await sb.auth.signInWithPassword({email:'ursu95iu@gmail.com',password});
+ if(error){msg.textContent='Eroare: '+error.message;return}
+ document.getElementById('cloudPassword').value='';
+ msg.textContent='';
+ await initCloud();
 }
 async function migrateLocalData(){
  if(localStorage.getItem('iulianCloudMigrated')==='1')return;
