@@ -192,9 +192,9 @@ async function initCloud(){
  cloudReady=!!session;
  document.getElementById('cloudPanel').style.display=cloudReady?'none':'block';
  if(cloudReady){
-   await Promise.all([loadConcerts(),loadTasks(),loadAmtapData(),loadPersonalCounter()]);
+   await migrateLocalIdeas();await Promise.all([loadConcerts(),loadTasks(),loadAmtapData(),loadPersonalCounter(),loadIdeas()]);
  } else {
-   concertCache=[];taskCache=[];amtapExamCache=[];amtapStudentCache=[];amtapPieceCache=[];renderConcerts();renderTasks();renderAmtapExams();renderAmtapStudents();
+   concertCache=[];taskCache=[];amtapExamCache=[];amtapStudentCache=[];amtapPieceCache=[];ideaCache=[];renderConcerts();renderTasks();renderAmtapExams();renderAmtapStudents();renderIdeas();
  }
 }
 async function connectCloud(){
@@ -231,7 +231,7 @@ function updateHomeCounts(){
  set('homeMusicCount',0);
  set('homePrintingCount',0);
  set('homePersonalCount',personalCount);
- set('homeIdeasCount',getIdeas().length);
+ set('homeIdeasCount',ideaCache.length);
 }
 function renderConcerts(){const el=document.getElementById('concertList');if(!concertCache.length){el.innerHTML='<div class="empty">Niciun concert. Apasă + pentru primul.</div>';return}el.innerHTML=concertCache.map(x=>{const d=new Date(x.concert_date+'T12:00:00');const ds=d.toLocaleDateString('ro-RO',{day:'2-digit',month:'short'});const labels={confirmed:'CONFIRMAT',pending:'ÎN CONFIRMARE',tentative:'INDECIS',cancelled:'ANULAT'};return '<div class="panel" onclick="editConcert(\''+x.id+'\')"><div class="row"><div><div class="row-title">'+escapeHtml(ds+(x.city?' · '+x.city:''))+'</div><div class="small">'+escapeHtml([x.venue,x.event_name].filter(Boolean).join(' · ')||'Fără detalii')+'</div></div><span class="status '+escapeHtml(x.status||'tentative')+'">'+(labels[x.status]||'INDECIS')+'</span></div></div>'}).join('');}
 function openConcertForm(){['concertId','concertDate','concertCity','concertVenue','concertName','concertFee','concertReceived','concertNotes'].forEach(id=>document.getElementById(id).value='');document.getElementById('concertStatus').value='tentative';document.getElementById('concertFormTitle').textContent='Concert nou';document.getElementById('deleteConcertBtn').style.display='none';document.getElementById('concertOverlay').classList.add('open');}
@@ -239,8 +239,6 @@ function editConcert(id){const x=concertCache.find(v=>String(v.id)===String(id))
 async function saveConcert(){if(!cloudReady)return needCloud();const id=document.getElementById('concertId').value;const payload={concert_date:document.getElementById('concertDate').value,city:document.getElementById('concertCity').value.trim()||null,venue:document.getElementById('concertVenue').value.trim()||null,event_name:document.getElementById('concertName').value.trim()||null,status:document.getElementById('concertStatus').value,fee:Number(document.getElementById('concertFee').value||0),received:Number(document.getElementById('concertReceived').value||0),notes:document.getElementById('concertNotes').value.trim()||null};if(!payload.concert_date)return alert('Alege data concertului.');const q=id?sb.from('concerts').update(payload).eq('id',id):sb.from('concerts').insert(payload);const {error}=await q;if(error)return alert('Nu s-a salvat în cloud: '+error.message);closeOverlay('concertOverlay');await loadConcerts();}
 async function deleteConcert(){if(!cloudReady)return needCloud();const id=document.getElementById('concertId').value;if(!id||!confirm('Ștergi concertul?'))return;const {error}=await sb.from('concerts').delete().eq('id',id);if(error)return alert('Nu s-a șters din cloud: '+error.message);closeOverlay('concertOverlay');await loadConcerts();}
 let taskCache=[];
-function getTasks(){try{return JSON.parse(localStorage.getItem('iulianBogheanTasks')||'[]')}catch{return []}}
-function storeTasks(){localStorage.setItem('iulianBogheanTasks',JSON.stringify(taskCache))}
 async function loadTasks(){if(!cloudReady){taskCache=[];renderTasks();return}const {data,error}=await sb.from('boghean_tasks').select('*').order('created_at',{ascending:false});if(error){needCloud();return}taskCache=(data||[]).map(x=>({id:x.id,name:x.task_name,status:x.status}));renderTasks()}
 function renderTasks(){const el=document.getElementById('taskList');if(!taskCache.length){el.innerHTML='<div class="empty">Niciun task. Apasă + pentru primul.</div>';return}const labels={done:'DONE',ongoing:'ONGOING',canceled:'CANCELED'};const cls={done:'confirmed',ongoing:'pending',canceled:'cancelled'};el.innerHTML=taskCache.map(x=>'<div class="panel" onclick="editTask(\''+x.id+'\')"><div class="row"><div class="row-title">'+escapeHtml(x.name)+'</div><span class="status '+cls[x.status]+'">'+labels[x.status]+'</span></div></div>').join('')}
 function openTaskForm(){document.getElementById('taskId').value='';document.getElementById('taskName').value='';document.getElementById('taskStatus').value='ongoing';document.getElementById('taskFormTitle').textContent='Task nou';document.getElementById('deleteTaskBtn').style.display='none';document.getElementById('taskOverlay').classList.add('open');setTimeout(()=>document.getElementById('taskName').focus(),100)}
@@ -344,7 +342,7 @@ async function deletePiece(){
 const roMonths=['ianuarie','februarie','martie','aprilie','mai','iunie','iulie','august','septembrie','octombrie','noiembrie','decembrie'];
 const roDays=['Duminică','Luni','Marți','Miercuri','Joi','Vineri','Sâmbătă'];
 function setDate(){const d=new Date(); document.getElementById('todayDate').textContent=`${roDays[d.getDay()]}, ${d.getDate()} ${roMonths[d.getMonth()]} ${d.getFullYear()}`}
-function showPage(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);if(id==='ideas'){renderIdeas();setTimeout(()=>document.getElementById('ideaText').focus(),120)}if(id==='amtap'&&cloudReady)loadAmtapData();if(id==='personal'&&cloudReady)loadPersonalCounter()}
+function showPage(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);if(id==='ideas'){if(cloudReady)loadIdeas();else renderIdeas();setTimeout(()=>document.getElementById('ideaText').focus(),120)}if(id==='amtap'&&cloudReady)loadAmtapData();if(id==='personal'&&cloudReady)loadPersonalCounter()}
 function home(){showPage('home')}
 function openSearch(){document.getElementById('searchOverlay').classList.add('open');setTimeout(()=>document.getElementById('searchInput').focus(),100);doSearch('')}
 function openAttention(){document.getElementById('attentionOverlay').classList.add('open')}
@@ -359,9 +357,42 @@ const searchData=[
  ['Ideas','Note rapide','ideas']
 ];
 function doSearch(q){const el=document.getElementById('searchResults');const s=q.trim().toLowerCase();const items=(s?searchData.filter(x=>(x[0]+' '+x[1]).toLowerCase().includes(s)):searchData.slice(0,6));el.innerHTML=items.map(x=>`<div class="result" onclick="closeOverlay('searchOverlay');showPage('${x[2]}')"><strong>${x[0]}</strong><span class="small">${x[1]}</span></div>`).join('') || '<div class="empty" style="margin-top:14px">Nimic găsit.</div>'}
-function getIdeas(){try{return JSON.parse(localStorage.getItem('iulianIdeas')||'[]')}catch{return []}}
-function saveIdea(){const t=document.getElementById('ideaText');const text=t.value.trim();if(!text)return;const ideas=getIdeas();ideas.unshift({text,ts:new Date().toISOString()});localStorage.setItem('iulianIdeas',JSON.stringify(ideas));t.value='';renderIdeas();updateHomeCounts()}
-function renderIdeas(){const el=document.getElementById('ideaList');const ideas=getIdeas();if(!ideas.length){el.innerHTML='<div class="empty">Încă nu ai idei salvate pe acest dispozitiv.</div>';return}el.innerHTML=ideas.map(i=>{const d=new Date(i.ts);return `<div class="idea"><time>${d.toLocaleString('ro-RO',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</time><p>${escapeHtml(i.text)}</p></div>`}).join('')}
+let ideaCache=[];
+async function migrateLocalIdeas(){
+ if(!cloudReady)return;
+ let old=[];try{old=JSON.parse(localStorage.getItem('iulianIdeas')||'[]')}catch{}
+ if(!old.length)return;
+ const rows=old.filter(x=>x&&x.text).map(x=>({idea_text:String(x.text),created_at:x.ts||new Date().toISOString()}));
+ if(!rows.length)return;
+ const {error}=await sb.from('ideas').insert(rows);
+ if(!error)localStorage.removeItem('iulianIdeas');
+}
+async function loadIdeas(){
+ if(!cloudReady){ideaCache=[];renderIdeas();updateHomeCounts();return}
+ const {data,error}=await sb.from('ideas').select('*').order('created_at',{ascending:false});
+ if(error)return alert('Nu s-au încărcat ideile din cloud: '+error.message);
+ ideaCache=data||[];renderIdeas();updateHomeCounts();
+}
+async function saveIdea(){
+ if(!cloudReady)return needCloud();
+ const t=document.getElementById('ideaText'),text=t.value.trim();if(!text)return;
+ const {error}=await sb.from('ideas').insert({idea_text:text});
+ if(error)return alert('Nu s-a salvat ideea: '+error.message);
+ t.value='';await loadIdeas();
+}
+async function deleteIdea(id){
+ if(!cloudReady)return needCloud();if(!confirm('Ștergi ideea?'))return;
+ const {error}=await sb.from('ideas').delete().eq('id',id);
+ if(error)return alert('Nu s-a șters ideea: '+error.message);
+ await loadIdeas();
+}
+function renderIdeas(){
+ const el=document.getElementById('ideaList');if(!el)return;
+ if(!ideaCache.length){el.innerHTML='<div class="empty">Încă nu ai idei salvate.</div>';return}
+ const groups={};
+ ideaCache.forEach(i=>{const d=new Date(i.created_at);const key=d.toLocaleDateString('ro-RO',{year:'numeric',month:'long',day:'numeric'});(groups[key]||(groups[key]=[])).push(i)});
+ el.innerHTML=Object.entries(groups).map(([day,items])=>'<div style="margin-bottom:18px"><div class="small" style="font-weight:700;text-transform:capitalize;margin:0 2px 8px">'+escapeHtml(day)+'</div>'+items.map(i=>{const d=new Date(i.created_at);return '<div class="idea"><time>'+d.toLocaleTimeString('ro-RO',{hour:'2-digit',minute:'2-digit'})+'</time><p>'+escapeHtml(i.idea_text)+'</p><button onclick="deleteIdea(\''+i.id+'\')" style="border:0;background:none;padding:4px 0;color:#d9303e;font-size:13px;cursor:pointer">Șterge</button></div>'}).join('')+'</div>').join('');
+}
 function escapeHtml(s){return s.replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 setDate();renderIdeas();updateHomeCounts();initCloud();
 </script>
