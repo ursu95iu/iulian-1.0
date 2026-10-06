@@ -105,7 +105,7 @@ button,input,textarea{font:inherit}
     <div class="backbar"><button class="back" onclick="home()">‹</button><div class="page-title">🖨️ 3D Printing</div></div>
     <div class="section"><div class="section-title"><h3>Comenzi active</h3><button class="plus">+</button></div><div class="empty">Nicio comandă adăugată.</div></div>
     <div class="section"><div class="section-title"><h3>Stoc muștiucuri</h3><button class="plus">+</button></div>
-      <div class="empty">Niciun produs în stoc.</div>
+      <div id="mouthpieceStock"></div>
     </div>
     <div class="section"><div class="section-title"><h3>To do</h3></div><div class="empty">Niciun task adăugat.</div></div>
   </section>
@@ -192,7 +192,7 @@ async function initCloud(){
  cloudReady=!!session;
  document.getElementById('cloudPanel').style.display=cloudReady?'none':'block';
  if(cloudReady){
-   await migrateLocalIdeas();await Promise.all([loadConcerts(),loadTasks(),loadPatents(),loadAmtapData(),loadPersonalCounter(),loadIdeas()]);
+   await migrateLocalIdeas();await Promise.all([loadConcerts(),loadTasks(),loadPatents(),loadMouthpieceStock(),loadAmtapData(),loadPersonalCounter(),loadIdeas()]);
  } else {
    concertCache=[];taskCache=[];patentCache=[];amtapExamCache=[];amtapStudentCache=[];amtapPieceCache=[];ideaCache=[];renderConcerts();renderTasks();renderPatents();renderAmtapExams();renderAmtapStudents();renderIdeas();
  }
@@ -258,6 +258,19 @@ function openTaskForm(){document.getElementById('taskId').value='';document.getE
 function editTask(id){const x=taskCache.find(v=>String(v.id)===String(id));if(!x)return;document.getElementById('taskId').value=x.id;document.getElementById('taskName').value=x.name;document.getElementById('taskStatus').value=x.status;document.getElementById('taskFormTitle').textContent='Modifică task';document.getElementById('deleteTaskBtn').style.display='block';document.getElementById('taskOverlay').classList.add('open')}
 async function saveTask(){if(!cloudReady)return needCloud();const id=document.getElementById('taskId').value,name=document.getElementById('taskName').value.trim();if(!name)return alert('Scrie taskul.');const payload={task_name:name,status:document.getElementById('taskStatus').value};const q=id?sb.from('boghean_tasks').update(payload).eq('id',id):sb.from('boghean_tasks').insert(payload);const {error}=await q;if(error)return alert('Nu s-a salvat în cloud: '+error.message);closeOverlay('taskOverlay');await loadTasks();}
 async function deleteTask(){if(!cloudReady)return needCloud();const id=document.getElementById('taskId').value;if(!id||!confirm('Ștergi taskul?'))return;const {error}=await sb.from('boghean_tasks').delete().eq('id',id);if(error)return alert('Nu s-a șters din cloud: '+error.message);closeOverlay('taskOverlay');await loadTasks();}
+let mouthpieceStockCache=[];
+async function loadMouthpieceStock(){
+ if(!cloudReady){mouthpieceStockCache=[];renderMouthpieceStock();return}
+ const {data,error}=await sb.from('mouthpiece_stock').select('*');
+ if(error){alert('Nu s-a încărcat stocul de muștiucuri: '+error.message);return}
+ mouthpieceStockCache=data||[];renderMouthpieceStock();
+}
+function renderMouthpieceStock(){
+ const el=document.getElementById('mouthpieceStock');if(!el)return;
+ const sizes=['4','4+','5','5+','6','6+','7','7+'],models=['mellow','jazz','funk'];
+ const cell=(size,model)=>{const a=mouthpieceStockCache.filter(x=>x.size===size&&x.model===model&&x.quantity>0);return a.length?a.map(x=>x.quantity+' '+escapeHtml(x.color)).join(' · '):'—'};
+ el.innerHTML='<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr><th style="text-align:left;padding:8px 5px;border-bottom:1px solid #e8ebf0">Mărime</th>'+models.map(m=>'<th style="text-align:left;padding:8px 5px;border-bottom:1px solid #e8ebf0;text-transform:capitalize">'+m+'</th>').join('')+'</tr></thead><tbody>'+sizes.map(s=>'<tr><td style="font-weight:750;padding:9px 5px;border-bottom:1px solid #f0f1f3">'+s+'</td>'+models.map(m=>'<td style="padding:9px 5px;border-bottom:1px solid #f0f1f3">'+cell(s,m)+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>';
+}
 let personalCount=0;
 async function loadPersonalCounter(){
  if(!cloudReady){personalCount=0;renderPersonalCounter();return}
