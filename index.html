@@ -80,7 +80,7 @@ button,input,textarea{font:inherit}
       <div id="concertList"></div>
     </div>
     <div class="section"><div class="section-title"><h3>To do</h3><button class="plus" onclick="openTaskForm()">+</button></div><div id="taskList"></div></div>
-    <div class="section"><div class="section-title"><h3>Muzicieni & patente</h3></div><div class="empty">Nicio patentă adăugată.</div></div>
+    <div class="section"><div class="section-title"><h3>Muzicieni & patente</h3></div><div id="patentList"></div></div>
     <div class="section"><div class="section-title"><h3>Transferuri</h3></div><div class="empty">Niciun transfer adăugat.</div></div>
   </section>
 
@@ -192,9 +192,9 @@ async function initCloud(){
  cloudReady=!!session;
  document.getElementById('cloudPanel').style.display=cloudReady?'none':'block';
  if(cloudReady){
-   await migrateLocalIdeas();await Promise.all([loadConcerts(),loadTasks(),loadAmtapData(),loadPersonalCounter(),loadIdeas()]);
+   await migrateLocalIdeas();await Promise.all([loadConcerts(),loadTasks(),loadPatents(),loadAmtapData(),loadPersonalCounter(),loadIdeas()]);
  } else {
-   concertCache=[];taskCache=[];amtapExamCache=[];amtapStudentCache=[];amtapPieceCache=[];ideaCache=[];renderConcerts();renderTasks();renderAmtapExams();renderAmtapStudents();renderIdeas();
+   concertCache=[];taskCache=[];patentCache=[];amtapExamCache=[];amtapStudentCache=[];amtapPieceCache=[];ideaCache=[];renderConcerts();renderTasks();renderPatents();renderAmtapExams();renderAmtapStudents();renderIdeas();
  }
 }
 async function connectCloud(){
@@ -238,6 +238,18 @@ function openConcertForm(){['concertId','concertDate','concertCity','concertVenu
 function editConcert(id){const x=concertCache.find(v=>String(v.id)===String(id));if(!x)return;document.getElementById('concertId').value=x.id;document.getElementById('concertDate').value=x.concert_date||'';document.getElementById('concertCity').value=x.city||'';document.getElementById('concertVenue').value=x.venue||'';document.getElementById('concertName').value=x.event_name||'';document.getElementById('concertStatus').value=x.status||'tentative';document.getElementById('concertFee').value=x.fee||'';document.getElementById('concertReceived').value=x.received||'';document.getElementById('concertNotes').value=x.notes||'';document.getElementById('concertFormTitle').textContent='Modifică concert';document.getElementById('deleteConcertBtn').style.display='block';document.getElementById('concertOverlay').classList.add('open');}
 async function saveConcert(){if(!cloudReady)return needCloud();const id=document.getElementById('concertId').value;const payload={concert_date:document.getElementById('concertDate').value,city:document.getElementById('concertCity').value.trim()||null,venue:document.getElementById('concertVenue').value.trim()||null,event_name:document.getElementById('concertName').value.trim()||null,status:document.getElementById('concertStatus').value,fee:Number(document.getElementById('concertFee').value||0),received:Number(document.getElementById('concertReceived').value||0),notes:document.getElementById('concertNotes').value.trim()||null};if(!payload.concert_date)return alert('Alege data concertului.');const q=id?sb.from('concerts').update(payload).eq('id',id):sb.from('concerts').insert(payload);const {error}=await q;if(error)return alert('Nu s-a salvat în cloud: '+error.message);closeOverlay('concertOverlay');await loadConcerts();}
 async function deleteConcert(){if(!cloudReady)return needCloud();const id=document.getElementById('concertId').value;if(!id||!confirm('Ștergi concertul?'))return;const {error}=await sb.from('concerts').delete().eq('id',id);if(error)return alert('Nu s-a șters din cloud: '+error.message);closeOverlay('concertOverlay');await loadConcerts();}
+let patentCache=[];
+async function loadPatents(){
+ if(!cloudReady){patentCache=[];renderPatents();return}
+ const {data,error}=await sb.from('boghean_patents').select('*').order('person_name');
+ if(error){alert('Nu s-au încărcat patentele: '+error.message);return}
+ patentCache=data||[];renderPatents();
+}
+function renderPatents(){
+ const el=document.getElementById('patentList');if(!el)return;
+ if(!patentCache.length){el.innerHTML='<div class="empty">Nicio patentă adăugată.</div>';return}
+ el.innerHTML=patentCache.map(x=>'<button class="panel" style="width:100%;text-align:left;border:0;cursor:pointer" onclick="window.open(\''+escapeHtml(x.verification_url)+'\',\'_blank\')"><div class="row"><div><div class="row-title">'+escapeHtml(x.person_name)+'</div><div class="small">'+escapeHtml(x.patent_number||'')+'</div></div><span class="chev">›</span></div></button>').join('');
+}
 let taskCache=[];
 async function loadTasks(){if(!cloudReady){taskCache=[];renderTasks();return}const {data,error}=await sb.from('boghean_tasks').select('*').order('created_at',{ascending:false});if(error){needCloud();return}taskCache=(data||[]).map(x=>({id:x.id,name:x.task_name,status:x.status}));renderTasks()}
 function renderTasks(){const el=document.getElementById('taskList');if(!taskCache.length){el.innerHTML='<div class="empty">Niciun task. Apasă + pentru primul.</div>';return}const labels={done:'DONE',ongoing:'ONGOING',canceled:'CANCELED'};const cls={done:'confirmed',ongoing:'pending',canceled:'cancelled'};el.innerHTML=taskCache.map(x=>'<div class="panel" onclick="editTask(\''+x.id+'\')"><div class="row"><div class="row-title">'+escapeHtml(x.name)+'</div><span class="status '+cls[x.status]+'">'+labels[x.status]+'</span></div></div>').join('')}
