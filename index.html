@@ -103,7 +103,7 @@ button,input,textarea{font:inherit}
 
   <section id="printing" class="view">
     <div class="backbar"><button class="back" onclick="home()">‹</button><div class="page-title">🖨️ 3D Printing</div></div>
-    <div class="section"><div class="section-title"><h3>Comenzi active</h3><button class="plus" onclick="openPrintingOrderForm()">+</button></div><div id="printingOrderList"></div></div>
+    <div class="section"><div class="section-title"><h3>Comenzi active</h3><button class="plus" onclick="openPrintingOrderForm()">+</button></div><div id="printingOrderList"></div></div><div class="section"><div class="section-title"><h3>Istoric comenzi</h3></div><div id="printingOrderHistory"></div></div>
     <div class="section"><div class="section-title"><h3>Stoc muștiucuri</h3><button class="plus">+</button></div>
       <div id="mouthpieceStock"></div>
     </div>
@@ -230,7 +230,7 @@ function updateHomeCounts(){
  const upcomingExams=amtapExamCache.filter(x=>new Date(x.exam_date+'T12:00:00')>=today).length;
  set('homeAmtapCount',upcomingExams);
  set('homeMusicCount',0);
- set('homePrintingCount',printingOrderCache.length);
+ set('homePrintingCount',printingOrderCache.filter(x=>(x.status||'active')==='active').length);
  set('homePersonalCount',personalCount);
  set('homeIdeasCount',ideaCache.length);
 }
@@ -267,10 +267,15 @@ async function loadPrintingOrders(){
  printingOrderCache=data||[];renderPrintingOrders();updateHomeCounts();
 }
 function renderPrintingOrders(){
- const el=document.getElementById('printingOrderList');if(!el)return;
- if(!printingOrderCache.length){el.innerHTML='<div class="empty">Nicio comandă adăugată.</div>';return}
- el.innerHTML=printingOrderCache.map(x=>'<div class="panel" onclick="editPrintingOrder(\''+x.id+'\')"><div class="row"><div><div class="row-title">'+escapeHtml(x.customer_name)+' · '+escapeHtml(x.item)+'</div><div class="small">'+x.quantity+' buc. · '+new Date(x.execution_date+'T12:00:00').toLocaleDateString('ro-RO',{day:'2-digit',month:'short',year:'numeric'})+'</div></div><span class="chev">›</span></div></div>').join('');
+ const el=document.getElementById('printingOrderList'),hist=document.getElementById('printingOrderHistory');if(!el||!hist)return;
+ const active=printingOrderCache.filter(x=>(x.status||'active')==='active'),done=printingOrderCache.filter(x=>x.status==='completed');
+ if(!active.length)el.innerHTML='<div class="empty">Nicio comandă activă.</div>';
+ else el.innerHTML=active.map(x=>'<div class="panel"><div class="row"><div onclick="editPrintingOrder(\''+x.id+'\')" style="flex:1;cursor:pointer"><div class="row-title">'+escapeHtml(x.customer_name)+' · '+escapeHtml(x.item)+'</div><div class="small">'+x.quantity+' buc. · '+new Date(x.execution_date+'T12:00:00').toLocaleDateString('ro-RO',{day:'2-digit',month:'short',year:'numeric'})+'</div></div><button onclick="completePrintingOrder(\''+x.id+'\')" style="border:0;border-radius:10px;background:#d9f1e4;color:#087d45;font-weight:800;padding:9px 11px;cursor:pointer">EXECUTAT</button></div></div>').join('');
+ if(!done.length)hist.innerHTML='<div class="empty">Istoricul este gol.</div>';
+ else hist.innerHTML=done.map(x=>'<div class="panel"><div class="row"><div><div class="row-title">'+escapeHtml(x.customer_name)+' · '+escapeHtml(x.item)+'</div><div class="small">'+x.quantity+' buc. · executat '+new Date(x.completed_at||x.execution_date).toLocaleDateString('ro-RO',{day:'2-digit',month:'short',year:'numeric'})+'</div></div></div></div>').join('');
 }
+async function completePrintingOrder(id){if(!cloudReady)return needCloud();const {error}=await sb.from('printing_orders').update({status:'completed',completed_at:new Date().toISOString()}).eq('id',id);if(error)return alert('Nu s-a mutat comanda în istoric: '+error.message);await loadPrintingOrders()}
+
 function openPrintingOrderForm(){document.getElementById('printingOrderId').value='';document.getElementById('printingOrderName').value='';document.getElementById('printingOrderItem').value='';document.getElementById('printingOrderQty').value='1';document.getElementById('printingOrderDate').value='';document.getElementById('printingOrderFormTitle').textContent='Comandă nouă';document.getElementById('deletePrintingOrderBtn').style.display='none';document.getElementById('printingOrderOverlay').classList.add('open')}
 function editPrintingOrder(id){const x=printingOrderCache.find(v=>String(v.id)===String(id));if(!x)return;document.getElementById('printingOrderId').value=x.id;document.getElementById('printingOrderName').value=x.customer_name;document.getElementById('printingOrderItem').value=x.item;document.getElementById('printingOrderQty').value=x.quantity;document.getElementById('printingOrderDate').value=x.execution_date;document.getElementById('printingOrderFormTitle').textContent='Modifică comanda';document.getElementById('deletePrintingOrderBtn').style.display='block';document.getElementById('printingOrderOverlay').classList.add('open')}
 async function savePrintingOrder(){if(!cloudReady)return needCloud();const id=document.getElementById('printingOrderId').value,payload={customer_name:document.getElementById('printingOrderName').value.trim(),item:document.getElementById('printingOrderItem').value.trim(),quantity:Number(document.getElementById('printingOrderQty').value),execution_date:document.getElementById('printingOrderDate').value};if(!payload.customer_name||!payload.item||!payload.quantity||!payload.execution_date)return alert('Completează numele, elementul, cantitatea și data executării.');const q=id?sb.from('printing_orders').update(payload).eq('id',id):sb.from('printing_orders').insert(payload);const {error}=await q;if(error)return alert('Nu s-a salvat comanda: '+error.message);closeOverlay('printingOrderOverlay');await loadPrintingOrders()}
