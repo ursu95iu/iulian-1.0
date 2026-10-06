@@ -103,7 +103,7 @@ button,input,textarea{font:inherit}
 
   <section id="printing" class="view">
     <div class="backbar"><button class="back" onclick="home()">‹</button><div class="page-title">🖨️ 3D Printing</div></div>
-    <div class="section"><div class="section-title"><h3>Comenzi active</h3><button class="plus">+</button></div><div class="empty">Nicio comandă adăugată.</div></div>
+    <div class="section"><div class="section-title"><h3>Comenzi active</h3><button class="plus" onclick="openPrintingOrderForm()">+</button></div><div id="printingOrderList"></div></div>
     <div class="section"><div class="section-title"><h3>Stoc muștiucuri</h3><button class="plus">+</button></div>
       <div id="mouthpieceStock"></div>
     </div>
@@ -175,6 +175,7 @@ button,input,textarea{font:inherit}
   <button id="deletePieceBtn" class="save" style="background:#e9343f;display:none" onclick="deletePiece()">ȘTERGE PIESA</button>
 </div></div>
 
+<div id="printingOrderOverlay" class="overlay" onclick="overlayBg(event,'printingOrderOverlay')"><div class="sheet"><div class="sheet-head"><h3 id="printingOrderFormTitle">Comandă nouă</h3><button class="close" onclick="closeOverlay('printingOrderOverlay')">×</button></div><input id="printingOrderId" type="hidden"><input id="printingOrderName" class="searchbox" placeholder="Nume"><input id="printingOrderItem" class="searchbox" placeholder="Element" style="margin-top:9px"><input id="printingOrderQty" class="searchbox" type="number" min="1" placeholder="Cantitate" style="margin-top:9px"><input id="printingOrderDate" class="searchbox" type="date" style="margin-top:9px"><button class="save" onclick="savePrintingOrder()">SALVEAZĂ COMANDA</button><button id="deletePrintingOrderBtn" class="save" style="background:#e9343f;display:none" onclick="deletePrintingOrder()">ȘTERGE COMANDA</button></div></div>
 <div id="taskOverlay" class="overlay" onclick="overlayBg(event,'taskOverlay')"><div class="sheet"><div class="sheet-head"><h3 id="taskFormTitle">Task nou</h3><button class="close" onclick="closeOverlay('taskOverlay')">×</button></div><input id="taskId" type="hidden"><input id="taskName" class="searchbox" placeholder="Denumirea / taskul"><select id="taskStatus" class="searchbox" style="margin-top:9px"><option value="ongoing">Ongoing</option><option value="done">Done</option><option value="canceled">Canceled</option></select><button class="save" onclick="saveTask()">SALVEAZĂ</button><button id="deleteTaskBtn" class="save" style="background:#e9343f;display:none" onclick="deleteTask()">ȘTERGE TASKUL</button></div></div>
 <div id="concertOverlay" class="overlay" onclick="overlayBg(event,'concertOverlay')"><div class="sheet"><div class="sheet-head"><h3 id="concertFormTitle">Concert nou</h3><button class="close" onclick="closeOverlay('concertOverlay')">×</button></div><input id="concertId" type="hidden"><input id="concertDate" class="searchbox" type="date"><input id="concertCity" class="searchbox" placeholder="Oraș" style="margin-top:9px"><input id="concertVenue" class="searchbox" placeholder="Locație / sală" style="margin-top:9px"><input id="concertName" class="searchbox" placeholder="Denumirea evenimentului" style="margin-top:9px"><select id="concertStatus" class="searchbox" style="margin-top:9px"><option value="confirmed">Confirmat</option><option value="pending">În confirmare</option><option value="tentative">Indecis</option><option value="cancelled">Anulat</option></select><input id="concertFee" class="searchbox" type="number" inputmode="decimal" placeholder="Onorariu" style="margin-top:9px"><input id="concertReceived" class="searchbox" type="number" inputmode="decimal" placeholder="Primit" style="margin-top:9px"><textarea id="concertNotes" class="idea-input" placeholder="Note" style="margin-top:9px;min-height:90px"></textarea><button class="save" onclick="saveConcert()">SALVEAZĂ</button><button id="deleteConcertBtn" class="save" style="background:#e9343f;display:none" onclick="deleteConcert()">ȘTERGE CONCERTUL</button></div></div>
 <div id="searchOverlay" class="overlay" onclick="overlayBg(event,'searchOverlay')"><div class="sheet"><div class="sheet-head"><h3>🔍 Search</h3><button class="close" onclick="closeOverlay('searchOverlay')">×</button></div><input id="searchInput" class="searchbox" placeholder="Boghean, Daraban, A7, București..." oninput="doSearch(this.value)"/><div id="searchResults"></div></div></div>
@@ -192,7 +193,7 @@ async function initCloud(){
  cloudReady=!!session;
  document.getElementById('cloudPanel').style.display=cloudReady?'none':'block';
  if(cloudReady){
-   await migrateLocalIdeas();await Promise.all([loadConcerts(),loadTasks(),loadPatents(),loadMouthpieceStock(),loadAmtapData(),loadPersonalCounter(),loadIdeas()]);
+   await migrateLocalIdeas();await Promise.all([loadConcerts(),loadTasks(),loadPatents(),loadMouthpieceStock(),loadPrintingOrders(),loadAmtapData(),loadPersonalCounter(),loadIdeas()]);
  } else {
    concertCache=[];taskCache=[];patentCache=[];amtapExamCache=[];amtapStudentCache=[];amtapPieceCache=[];ideaCache=[];renderConcerts();renderTasks();renderPatents();renderAmtapExams();renderAmtapStudents();renderIdeas();
  }
@@ -229,7 +230,7 @@ function updateHomeCounts(){
  const upcomingExams=amtapExamCache.filter(x=>new Date(x.exam_date+'T12:00:00')>=today).length;
  set('homeAmtapCount',upcomingExams);
  set('homeMusicCount',0);
- set('homePrintingCount',0);
+ set('homePrintingCount',printingOrderCache.length);
  set('homePersonalCount',personalCount);
  set('homeIdeasCount',ideaCache.length);
 }
@@ -258,6 +259,22 @@ function openTaskForm(){document.getElementById('taskId').value='';document.getE
 function editTask(id){const x=taskCache.find(v=>String(v.id)===String(id));if(!x)return;document.getElementById('taskId').value=x.id;document.getElementById('taskName').value=x.name;document.getElementById('taskStatus').value=x.status;document.getElementById('taskFormTitle').textContent='Modifică task';document.getElementById('deleteTaskBtn').style.display='block';document.getElementById('taskOverlay').classList.add('open')}
 async function saveTask(){if(!cloudReady)return needCloud();const id=document.getElementById('taskId').value,name=document.getElementById('taskName').value.trim();if(!name)return alert('Scrie taskul.');const payload={task_name:name,status:document.getElementById('taskStatus').value};const q=id?sb.from('boghean_tasks').update(payload).eq('id',id):sb.from('boghean_tasks').insert(payload);const {error}=await q;if(error)return alert('Nu s-a salvat în cloud: '+error.message);closeOverlay('taskOverlay');await loadTasks();}
 async function deleteTask(){if(!cloudReady)return needCloud();const id=document.getElementById('taskId').value;if(!id||!confirm('Ștergi taskul?'))return;const {error}=await sb.from('boghean_tasks').delete().eq('id',id);if(error)return alert('Nu s-a șters din cloud: '+error.message);closeOverlay('taskOverlay');await loadTasks();}
+let printingOrderCache=[];
+async function loadPrintingOrders(){
+ if(!cloudReady){printingOrderCache=[];renderPrintingOrders();return}
+ const {data,error}=await sb.from('printing_orders').select('*').order('execution_date');
+ if(error){alert('Nu s-au încărcat comenzile: '+error.message);return}
+ printingOrderCache=data||[];renderPrintingOrders();updateHomeCounts();
+}
+function renderPrintingOrders(){
+ const el=document.getElementById('printingOrderList');if(!el)return;
+ if(!printingOrderCache.length){el.innerHTML='<div class="empty">Nicio comandă adăugată.</div>';return}
+ el.innerHTML=printingOrderCache.map(x=>'<div class="panel" onclick="editPrintingOrder(\''+x.id+'\')"><div class="row"><div><div class="row-title">'+escapeHtml(x.customer_name)+' · '+escapeHtml(x.item)+'</div><div class="small">'+x.quantity+' buc. · '+new Date(x.execution_date+'T12:00:00').toLocaleDateString('ro-RO',{day:'2-digit',month:'short',year:'numeric'})+'</div></div><span class="chev">›</span></div></div>').join('');
+}
+function openPrintingOrderForm(){document.getElementById('printingOrderId').value='';document.getElementById('printingOrderName').value='';document.getElementById('printingOrderItem').value='';document.getElementById('printingOrderQty').value='1';document.getElementById('printingOrderDate').value='';document.getElementById('printingOrderFormTitle').textContent='Comandă nouă';document.getElementById('deletePrintingOrderBtn').style.display='none';document.getElementById('printingOrderOverlay').classList.add('open')}
+function editPrintingOrder(id){const x=printingOrderCache.find(v=>String(v.id)===String(id));if(!x)return;document.getElementById('printingOrderId').value=x.id;document.getElementById('printingOrderName').value=x.customer_name;document.getElementById('printingOrderItem').value=x.item;document.getElementById('printingOrderQty').value=x.quantity;document.getElementById('printingOrderDate').value=x.execution_date;document.getElementById('printingOrderFormTitle').textContent='Modifică comanda';document.getElementById('deletePrintingOrderBtn').style.display='block';document.getElementById('printingOrderOverlay').classList.add('open')}
+async function savePrintingOrder(){if(!cloudReady)return needCloud();const id=document.getElementById('printingOrderId').value,payload={customer_name:document.getElementById('printingOrderName').value.trim(),item:document.getElementById('printingOrderItem').value.trim(),quantity:Number(document.getElementById('printingOrderQty').value),execution_date:document.getElementById('printingOrderDate').value};if(!payload.customer_name||!payload.item||!payload.quantity||!payload.execution_date)return alert('Completează numele, elementul, cantitatea și data executării.');const q=id?sb.from('printing_orders').update(payload).eq('id',id):sb.from('printing_orders').insert(payload);const {error}=await q;if(error)return alert('Nu s-a salvat comanda: '+error.message);closeOverlay('printingOrderOverlay');await loadPrintingOrders()}
+async function deletePrintingOrder(){if(!cloudReady)return needCloud();const id=document.getElementById('printingOrderId').value;if(!id||!confirm('Ștergi comanda?'))return;const {error}=await sb.from('printing_orders').delete().eq('id',id);if(error)return alert('Nu s-a șters comanda: '+error.message);closeOverlay('printingOrderOverlay');await loadPrintingOrders()}
 let mouthpieceStockCache=[];
 async function loadMouthpieceStock(){
  if(!cloudReady){mouthpieceStockCache=[];renderMouthpieceStock();return}
