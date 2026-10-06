@@ -247,8 +247,9 @@ async function loadPatents(){
 }
 function renderPatents(){
  const el=document.getElementById('patentList');if(!el)return;
- if(!patentCache.length){el.innerHTML='<div class="empty">Nicio patentă adăugată.</div>';return}
- el.innerHTML=patentCache.map(x=>'<button class="panel" style="width:100%;text-align:left;border:0;cursor:pointer" onclick="window.open(\''+escapeHtml(x.verification_url)+'\',\'_blank\')"><div class="row"><div><div class="row-title">'+escapeHtml(x.person_name)+'</div><div class="small">'+escapeHtml(x.patent_number||'')+'</div></div><span class="chev">›</span></div></button>').join('');
+ const cats=[['band_baza','Band de bază'],['suflatori','Suflători'],['trompetisti','Trompetiști'],['backvocals','Backvocals']];
+ const card=x=>'<button class="panel" style="width:100%;text-align:left;border:0;cursor:pointer;margin-bottom:8px" onclick="window.open(\''+escapeHtml(x.verification_url)+'\',\'_blank\')"><div class="row"><div><div class="row-title">'+escapeHtml(x.person_name)+'</div><div class="small">'+escapeHtml(x.patent_number||'')+'</div></div><span class="chev">›</span></div></button>';
+ el.innerHTML=cats.map(([key,label],i)=>{const items=patentCache.filter(x=>x.category===key);return '<div style="'+(i?'border-top:1px solid #e8ebf0;padding-top:14px;':'')+'margin-top:'+(i?'12px':'0')+'"><div class="small" style="font-weight:750;margin:0 2px 9px;color:#465066">'+label+'</div>'+(items.length?items.map(card).join(''):'<div class="empty" style="padding:8px 2px 12px">—</div>')+'</div>'}).join('');
 }
 let taskCache=[];
 async function loadTasks(){if(!cloudReady){taskCache=[];renderTasks();return}const {data,error}=await sb.from('boghean_tasks').select('*').order('created_at',{ascending:false});if(error){needCloud();return}taskCache=(data||[]).map(x=>({id:x.id,name:x.task_name,status:x.status}));renderTasks()}
