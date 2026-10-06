@@ -64,7 +64,7 @@ button,input,textarea{font:inherit}
     </div>
 
     <div class="cards">
-      <button class="card red" onclick="showPage('boghean')"><div class="card-icon flip-horizontal">🎤</div><div><h2>BOGHEAN</h2><p>Concerte · Taskuri · Muzicieni · Transferuri</p></div><div class="card-meta"><span id="homeBogheanCount" class="count" style="color:var(--red-strong)">0</span><span class="meta-label">evenimente următoare</span><span class="chev">›</span></div></button>
+      <button class="card red" onclick="showPage('boghean')"><div class="card-icon flip-horizontal">🎤</div><div><h2>BOGHEAN</h2><p>Concerte · Taskuri · Muzicieni · Transferuri</p></div><div class="card-meta"><span id="homeBogheanCount" class="count" style="color:var(--red-strong)">0</span><span class="meta-label">concerte</span><span id="homeBogheanTaskCount" class="count" style="color:var(--red-strong);height:32px;min-width:38px;font-size:17px">0</span><span class="meta-label">taskuri active</span><span class="chev">›</span></div></button>
       <button class="card blue" onclick="showPage('amtap')"><div class="card-icon flip-horizontal">🎓</div><div><h2>AMTAP</h2><p>Examene · Studenți · Repertoriu · Taskuri</p></div><div class="card-meta"><span id="homeAmtapCount" class="count" style="color:var(--blue-strong)">0</span><span class="meta-label">examene în curând</span><span class="chev">›</span></div></button>
       <button class="card green" onclick="showPage('music')"><div class="card-icon">🥁</div><div><h2>MUZICĂ</h2><p>Concerte · Venituri · Proiecte · Statistici</p></div><div class="card-meta"><span id="homeMusicCount" class="count" style="color:var(--green-strong)">0</span><span class="meta-label">concerte luna aceasta</span><span class="chev">›</span></div></button>
       <button class="card purple" onclick="showPage('printing')"><div class="card-icon">🖨️</div><div><h2>3D PRINTING</h2><p>Comenzi · Stoc · Taskuri · Vânzări</p></div><div class="card-meta"><span id="homePrintingCount" class="count" style="color:var(--purple-strong)">0</span><span class="meta-label">comenzi active</span><span class="chev">›</span></div></button>
@@ -224,6 +224,8 @@ function updateHomeCounts(){
  const boghean=concertCache.filter(x=>x.status!=='cancelled'&&new Date(x.concert_date+'T12:00:00')>=today).length;
  const set=(id,n)=>{const el=document.getElementById(id);if(el)el.textContent=n};
  set('homeBogheanCount',boghean);
+ const activeTasks=taskCache.filter(x=>x.status==='ongoing').length;
+ set('homeBogheanTaskCount',activeTasks);
  const upcomingExams=amtapExamCache.filter(x=>new Date(x.exam_date+'T12:00:00')>=today).length;
  set('homeAmtapCount',upcomingExams);
  set('homeMusicCount',0);
