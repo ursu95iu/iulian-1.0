@@ -92,8 +92,8 @@ button,input,textarea{font:inherit}
       <div id="amtapExamList"></div>
     </div>
     <div class="section">
-      <div class="section-title"><h3>Studenți</h3><button class="plus" onclick="openStudentForm()">+</button></div>
-      <div id="amtapStudentList"></div>
+      <div class="section-title"><h3>Studenți de bază</h3><button class="plus" onclick="openStudentForm('base')">+</button></div>
+      <div id="amtapStudentList"></div></div><div class="section"><div class="section-title"><h3>Studenți complementari</h3><button class="plus" onclick="openStudentForm('complementary')">+</button></div><div id="amtapComplementaryList"></div>
     </div>
   </section>
 
@@ -139,7 +139,7 @@ button,input,textarea{font:inherit}
 
 <div id="studentOverlay" class="overlay" onclick="overlayBg(event,'studentOverlay')"><div class="sheet">
   <div class="sheet-head"><h3 id="studentFormTitle">Student nou</h3><button class="close" onclick="closeOverlay('studentOverlay')">×</button></div>
-  <input id="studentId" type="hidden">
+  <input id="studentId" type="hidden"><input id="studentCategory" type="hidden" value="base">
   <input id="studentName" class="searchbox" placeholder="Nume și prenume">
   <select id="studentYear" class="searchbox" style="margin-top:9px">
     <option value="1">Anul I</option><option value="2">Anul II</option><option value="3">Anul III</option><option value="4">Anul IV</option><option value="5">Anul V</option><option value="6">Anul VI</option>
@@ -402,21 +402,23 @@ async function deleteAmtapExam(){
  const {error}=await sb.from('amtap_exams').delete().eq('id',id);if(error)return alert('Nu s-a șters examenul: '+error.message);closeOverlay('amtapExamOverlay');await loadAmtapData();
 }
 function renderAmtapStudents(){
- const el=document.getElementById('amtapStudentList');if(!el)return;
- if(!amtapStudentCache.length){el.innerHTML='<div class="empty">Niciun student adăugat. Apasă + pentru primul.</div>';return}
  const roman=['','I','II','III','IV','V','VI'];
- el.innerHTML=amtapStudentCache.map(x=>{const n=amtapPieceCache.filter(p=>String(p.student_id)===String(x.id)).length;return '<div class="panel" onclick="openStudentProfile(\''+x.id+'\')"><div class="row"><div><div class="row-title">'+escapeHtml(x.full_name)+'</div><div class="small">Anul '+roman[x.study_year]+' · '+n+' '+(n===1?'piesă':'piese')+'</div></div><span>›</span></div></div>'}).join('');
+ for(const [cat,id] of [['base','amtapStudentList'],['complementary','amtapComplementaryList']]){
+ const el=document.getElementById(id);if(!el)continue;
+ const rows=amtapStudentCache.filter(x=>(x.student_category||'base')===cat);
+ el.innerHTML=rows.length?rows.map(x=>{const n=amtapPieceCache.filter(p=>String(p.student_id)===String(x.id)).length;return '<div class="panel" onclick="openStudentProfile(\''+x.id+'\')"><div class="row"><div><div class="row-title">'+escapeHtml(x.full_name)+'</div><div class="small">Anul '+roman[x.study_year]+' · '+n+' '+(n===1?'piesă':'piese')+'</div></div><span>›</span></div></div>'}).join(''):'<div class="empty">Niciun student adăugat.</div>';
+ }
 }
-function openStudentForm(){
+function openStudentForm(category='base'){document.getElementById('studentCategory').value=category;
  document.getElementById('studentId').value='';document.getElementById('studentName').value='';document.getElementById('studentYear').value='1';document.getElementById('studentFormTitle').textContent='Student nou';document.getElementById('deleteStudentBtn').style.display='none';document.getElementById('studentOverlay').classList.add('open');
 }
 function editStudent(id){
  const x=amtapStudentCache.find(v=>String(v.id)===String(id));if(!x)return;
- document.getElementById('studentId').value=x.id;document.getElementById('studentName').value=x.full_name;document.getElementById('studentYear').value=String(x.study_year);document.getElementById('studentFormTitle').textContent='Modifică student';document.getElementById('deleteStudentBtn').style.display='block';document.getElementById('studentOverlay').classList.add('open');
+ document.getElementById('studentId').value=x.id;document.getElementById('studentCategory').value=x.student_category||'base';document.getElementById('studentName').value=x.full_name;document.getElementById('studentYear').value=String(x.study_year);document.getElementById('studentFormTitle').textContent='Modifică student';document.getElementById('deleteStudentBtn').style.display='block';document.getElementById('studentOverlay').classList.add('open');
 }
 async function saveStudent(){
  if(!cloudReady)return needCloud();const id=document.getElementById('studentId').value;const full_name=document.getElementById('studentName').value.trim();if(!full_name)return alert('Scrie numele studentului.');
- const payload={full_name,study_year:Number(document.getElementById('studentYear').value)};const q=id?sb.from('amtap_students').update(payload).eq('id',id):sb.from('amtap_students').insert(payload);const {error}=await q;if(error)return alert('Nu s-a salvat studentul: '+error.message);closeOverlay('studentOverlay');await loadAmtapData();if(id)openStudentProfile(id);
+ const payload={full_name,study_year:Number(document.getElementById('studentYear').value),student_category:document.getElementById('studentCategory').value};const q=id?sb.from('amtap_students').update(payload).eq('id',id):sb.from('amtap_students').insert(payload);const {error}=await q;if(error)return alert('Nu s-a salvat studentul: '+error.message);closeOverlay('studentOverlay');await loadAmtapData();if(id)openStudentProfile(id);
 }
 async function deleteStudent(){
  if(!cloudReady)return needCloud();const id=document.getElementById('studentId').value;if(!id||!confirm('Ștergi studentul și programul lui?'))return;const {error}=await sb.from('amtap_students').delete().eq('id',id);if(error)return alert('Nu s-a șters studentul: '+error.message);closeOverlay('studentOverlay');closeOverlay('studentProfileOverlay');await loadAmtapData();
