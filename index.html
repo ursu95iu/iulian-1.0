@@ -305,7 +305,7 @@ async function loadMusicEvents(){if(!cloudReady){musicEventCache=[];renderMusicE
 function renderMusicEvents(){
  const el=document.getElementById('musicEventList'),hist=document.getElementById('musicEventHistory');if(!el||!hist)return;
  const today=new Date();today.setHours(0,0,0,0);
- const upcoming=musicEventCache.filter(x=>new Date(x.event_date+'T12:00:00')>=today),past=musicEventCache.filter(x=>new Date(x.event_date+'T12:00:00')<today);
+ const upcoming=musicEventCache.filter(x=>new Date(x.event_date+'T12:00:00')>=today).sort((a,b)=>a.event_date.localeCompare(b.event_date)),past=musicEventCache.filter(x=>new Date(x.event_date+'T12:00:00')<today).sort((a,b)=>b.event_date.localeCompare(a.event_date));
  const card=x=>{const d=new Date(x.event_date+'T12:00:00'),paid=!!x.is_paid;return '<div class="panel" style="background:'+(paid?'#e8f7ee':'#fff3c9')+';border:1px solid '+(paid?'#b9e4ca':'#f0d77a')+'" onclick="editMusicEvent(\''+x.id+'\')"><div class="row"><div><div class="row-title">'+escapeHtml(x.event_name)+'</div><div class="small">'+d.toLocaleDateString('ro-RO',{day:'2-digit',month:'short',year:'numeric'})+(x.location?' · '+escapeHtml(x.location):'')+(x.performer?' · '+escapeHtml(x.performer):'')+(x.is_boghean?' · Boghean':'')+'</div><div style="margin-top:6px;font-size:12px;font-weight:800;color:'+(paid?'#087d45':'#8a6700')+'">'+(paid?'PRIMIT ✓':'DE PRIMIT')+'</div></div><b>'+Number(x.fee||0).toLocaleString('ro-RO')+'</b></div></div>'};
  el.innerHTML=upcoming.length?upcoming.map(card).join(''):'<div class="empty">Niciun concert viitor.</div>';
  const groups={};past.forEach(x=>{const d=new Date(x.event_date+'T12:00:00'),k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');(groups[k]||(groups[k]=[])).push(x)});
