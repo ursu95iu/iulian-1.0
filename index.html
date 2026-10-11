@@ -64,9 +64,9 @@ button,input,textarea{font:inherit}
     </div>
 
     <div class="cards">
-      <button class="card red" onclick="showPage('boghean')"><div class="card-icon flip-horizontal">🎤</div><div><h2>BOGHEAN</h2><p>Concerte · Taskuri · Muzicieni · Transferuri</p></div><div class="card-meta"><span id="homeBogheanCount" class="count" style="color:var(--red-strong)">0</span><span class="meta-label">concerte</span><span id="homeBogheanTaskCount" class="count" style="color:var(--red-strong);height:32px;min-width:38px;font-size:17px">0</span><span class="meta-label">taskuri active</span><span class="chev">›</span></div></button>
+<button class="card green" onclick="showPage('music')"><div class="card-icon">🥁</div><div><h2>CONCERTE</h2><p>Concerte · Venituri · Proiecte · Statistici</p></div><div class="card-meta"><span id="homeMusicCount" class="count" style="color:var(--green-strong)">0</span><span class="meta-label">concerte luna aceasta</span><span class="chev">›</span></div></button>
       <button class="card blue" onclick="showPage('amtap')"><div class="card-icon flip-horizontal">🎓</div><div><h2>AMTAP</h2><p>Examene · Studenți · Repertoriu · Taskuri</p></div><div class="card-meta"><span id="homeAmtapCount" class="count" style="color:var(--blue-strong)">0</span><span class="meta-label">examene în curând</span><span class="chev">›</span></div></button>
-      <button class="card green" onclick="showPage('music')"><div class="card-icon">🥁</div><div><h2>MUZICĂ</h2><p>Concerte · Venituri · Proiecte · Statistici</p></div><div class="card-meta"><span id="homeMusicCount" class="count" style="color:var(--green-strong)">0</span><span class="meta-label">concerte luna aceasta</span><span class="chev">›</span></div></button>
+      <button class="card red" onclick="showPage('boghean')"><div class="card-icon flip-horizontal">🎤</div><div><h2>BOGHEAN</h2><p>Concerte · Taskuri · Muzicieni · Transferuri</p></div><div class="card-meta"><span id="homeBogheanCount" class="count" style="color:var(--red-strong)">0</span><span class="meta-label">concerte</span><span id="homeBogheanTaskCount" class="count" style="color:var(--red-strong);height:32px;min-width:38px;font-size:17px">0</span><span class="meta-label">taskuri active</span><span class="chev">›</span></div></button>
       <button class="card purple" onclick="showPage('printing')"><div class="card-icon">🖨️</div><div><h2>3D PRINTING</h2><p>Comenzi · Stoc · Taskuri · Vânzări</p></div><div class="card-meta"><span id="homePrintingCount" class="count" style="color:var(--purple-strong)">0</span><span class="meta-label">comenzi active</span><span class="chev">›</span></div></button>
       <button class="card gray" onclick="showPage('personal')"><div class="card-icon">👤</div><div><h2>PERSONAL</h2><p>În dezvoltare · Spațiu personal</p></div><div class="card-meta"><span id="homePersonalCount" class="count" style="color:var(--gray-strong)">0</span><span class="meta-label">elemente</span><span class="chev">›</span></div></button>
       <button class="card yellow" onclick="showPage('ideas')"><div class="card-icon">💡</div><div><h2>IDEAS</h2><p>Notează rapid ideile care apar în orice moment</p></div><div class="card-meta"><span id="homeIdeasCount" class="count">0</span><span class="meta-label">idei</span><span class="chev">›</span></div></button>
@@ -98,7 +98,7 @@ button,input,textarea{font:inherit}
   </section>
 
   <section id="music" class="view">
-    <div class="backbar"><button class="back" onclick="home()">‹</button><div class="page-title">🥁 Muzică</div></div>
+    <div class="backbar"><button class="back" onclick="home()">‹</button><div class="page-title">🥁 Concerte</div></div>
     <div class="section"><div class="section-title"><h3>Concerte</h3><button class="plus" onclick="openMusicEventForm()">+</button></div><div id="musicEventList"></div></div><div class="section"><div class="section-title"><h3>Istoric concerte</h3></div><div id="musicEventHistory"></div></div><div class="section"><div class="section-title"><h3>Oameni care trebuie să-mi dea bani</h3><button class="plus" onclick="openReceivableForm()">+</button></div><div id="receivableList"></div></div>
   </section>
 
@@ -461,7 +461,7 @@ function overlayBg(e,id){if(e.target.id===id)closeOverlay(id)}
 const searchData=[
  ['Boghean','Concerte · Taskuri · Muzicieni · Transferuri','boghean'],
  ['AMTAP','Examene · Studenți · Repertoriu','amtap'],
- ['Muzică','Concerte · Venituri · Proiecte','music'],
+ ['Concerte','Concerte · Venituri · Proiecte','music'],
  ['3D Printing','Comenzi · Stoc · Taskuri','printing'],
  ['Personal','Spațiu personal','personal'],
  ['Ideas','Note rapide','ideas']
