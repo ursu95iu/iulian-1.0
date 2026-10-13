@@ -255,17 +255,22 @@ function renderConcerts(){
  const today=new Date();today.setHours(0,0,0,0);
  return concertCache.filter(x=>x.status!=='cancelled'&&!x.is_paid&&new Date(x.concert_date+'T12:00:00')<today);
 }
+function getUnpaidPastMusicEvents(){
+ const today=new Date();today.setHours(0,0,0,0);
+ return musicEventCache.filter(x=>!x.is_paid&&new Date(x.event_date+'T12:00:00')<today);
+}
 function updateAttentionBadge(){
  const b=document.getElementById('attentionBadge');if(!b)return;
- const n=getUnpaidPastConcerts().length+receivableCache.filter(x=>!x.is_received).length;b.textContent=n;b.style.display=n?'block':'none';
+ const n=getUnpaidPastConcerts().filter(x=>!musicEventCache.some(m=>String(m.concert_id)===String(x.id))).length+getUnpaidPastMusicEvents().length+receivableCache.filter(x=>!x.is_received).length;b.textContent=n;b.style.display=n?'block':'none';
 }
 function renderAttention(){
  const el=document.getElementById('attentionList');if(!el)return;
- const unpaid=getUnpaidPastConcerts(),receivables=receivableCache.filter(x=>!x.is_received);
- if(!unpaid.length&&!receivables.length){el.innerHTML='<div class="empty">Nimic nu necesită atenție.</div>';return}
+ const musicUnpaid=getUnpaidPastMusicEvents(),unpaid=getUnpaidPastConcerts().filter(x=>!musicEventCache.some(m=>String(m.concert_id)===String(x.id))),receivables=receivableCache.filter(x=>!x.is_received);
+ if(!unpaid.length&&!musicUnpaid.length&&!receivables.length){el.innerHTML='<div class="empty">Nimic nu necesită atenție.</div>';return}
  const concerts=unpaid.map(x=>{const d=new Date(x.concert_date+'T12:00:00');const when=d.toLocaleDateString('ro-RO',{day:'2-digit',month:'long',year:'numeric'});const who=x.event_name||x.city||x.venue||'concert';return '<div class="attention" onclick="closeOverlay(\'attentionOverlay\');showPage(\'boghean\');setTimeout(()=>editConcert(\''+x.id+'\'),80)" style="cursor:pointer"><div class="att-icon">💸</div><div class="att-text"><strong>Concert trecut neachitat</strong><span>Nu ai primit banii pentru '+escapeHtml(who)+' din '+escapeHtml(when)+(Number(x.fee||0)>0?' · '+Number(x.fee).toLocaleString('ro-RO'):'')+'</span></div></div>'}).join('');
  const debts=receivables.map(x=>{const due=x.due_date?new Date(x.due_date+'T12:00:00').toLocaleDateString('ro-RO',{day:'2-digit',month:'short',year:'numeric'}):'Fără termen';return '<div class="attention" onclick="closeOverlay(\'attentionOverlay\');showPage(\'music\');setTimeout(()=>editReceivable(\''+x.id+'\'),80)" style="cursor:pointer"><div class="att-icon">💰</div><div class="att-text"><strong>De încasat de la '+escapeHtml(x.person_name)+'</strong><span>'+escapeHtml(x.event_name||'Fără eveniment')+' · '+Number(x.amount||0).toLocaleString('ro-RO')+' · '+escapeHtml(due)+'</span></div></div>'}).join('');
- el.innerHTML=concerts+debts;
+ const musicAlerts=musicUnpaid.map(x=>{const when=new Date(x.event_date+'T12:00:00').toLocaleDateString('ro-RO',{day:'2-digit',month:'long',year:'numeric'});return '<div class="attention" onclick="closeOverlay(\'attentionOverlay\');showPage(\'music\');setTimeout(()=>editMusicEvent(\''+x.id+'\'),80)" style="cursor:pointer"><div class="att-icon">💸</div><div class="att-text"><strong>Concert trecut neachitat</strong><span>'+escapeHtml(x.event_name)+' din '+escapeHtml(when)+(Number(x.fee||0)>0?' · '+Number(x.fee).toLocaleString('ro-RO')+' lei':'')+'</span></div></div>'}).join('');
+ el.innerHTML=concerts+musicAlerts+debts;
 }
 function openConcertForm(){showPage('music');openMusicEventForm();return;['concertId','concertDate','concertCity','concertVenue','concertName','concertFee','concertReceived','concertNotes'].forEach(id=>document.getElementById(id).value='');document.getElementById('concertStatus').value='tentative';document.getElementById('concertFormTitle').textContent='Concert nou';document.getElementById('deleteConcertBtn').style.display='none';document.getElementById('concertPaidBtn').style.display='none';document.getElementById('concertPaidBtn').disabled=false;document.getElementById('concertOverlay').classList.add('open');}
 function editConcert(id){const x=concertCache.find(v=>String(v.id)===String(id));if(!x)return;document.getElementById('concertId').value=x.id;document.getElementById('concertDate').value=x.concert_date||'';document.getElementById('concertCity').value=x.city||'';document.getElementById('concertVenue').value=x.venue||'';document.getElementById('concertName').value=x.event_name||'';document.getElementById('concertStatus').value=x.status||'tentative';document.getElementById('concertFee').value=x.fee||'';document.getElementById('concertReceived').value=x.received||'';document.getElementById('concertNotes').value=x.notes||'';document.getElementById('concertFormTitle').textContent='Modifică concert';document.getElementById('deleteConcertBtn').style.display='block';const pb=document.getElementById('concertPaidBtn');pb.style.display='block';pb.textContent=x.is_paid?'PRIMIT ✓':'PRIMIT';pb.style.background=x.is_paid?'#d9f1e4':'#fff0b8';pb.style.color=x.is_paid?'#087d45':'#7a5b00';pb.disabled=false;document.getElementById('concertOverlay').classList.add('open');}
@@ -302,7 +307,7 @@ async function saveReceivable(){if(!cloudReady)return needCloud();const id=docum
 async function markReceivableReceived(){const id=document.getElementById('receivableId').value;if(!id)return;const {error}=await sb.from('concert_receivables').update({is_received:true,received_at:new Date().toISOString()}).eq('id',id);if(error)return alert('Nu s-a marcat ca primit: '+error.message);closeOverlay('receivableOverlay');await loadReceivables()}
 async function deleteReceivable(){const id=document.getElementById('receivableId').value;if(!id||!confirm('Ștergi această sumă de încasat?'))return;const {error}=await sb.from('concert_receivables').delete().eq('id',id);if(error)return alert('Nu s-a șters: '+error.message);closeOverlay('receivableOverlay');await loadReceivables()}
 let musicEventCache=[];
-async function loadMusicEvents(){if(!cloudReady){musicEventCache=[];renderMusicEvents();return}const {data,error}=await sb.from('music_events').select('*').order('event_date',{ascending:false});if(error){alert('Nu s-au încărcat concertele din Muzică: '+error.message);return}musicEventCache=data||[];renderMusicEvents();updateHomeCounts()}
+async function loadMusicEvents(){if(!cloudReady){musicEventCache=[];renderMusicEvents();return}const {data,error}=await sb.from('music_events').select('*').order('event_date',{ascending:false});if(error){alert('Nu s-au încărcat concertele din Muzică: '+error.message);return}musicEventCache=data||[];renderMusicEvents();updateHomeCounts();updateAttentionBadge();renderAttention()}
 function renderMusicEvents(){
  const el=document.getElementById('musicEventList'),hist=document.getElementById('musicEventHistory');if(!el||!hist)return;
  const today=new Date();today.setHours(0,0,0,0);
