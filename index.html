@@ -68,6 +68,7 @@ button,input,textarea{font:inherit}
       <button class="card blue" onclick="showPage('amtap')"><div class="card-icon flip-horizontal">🎓</div><div><h2>AMTAP</h2><p>Examene · Studenți · Repertoriu · Taskuri</p></div><div class="card-meta"><span id="homeAmtapCount" class="count" style="color:var(--blue-strong)">0</span><span class="meta-label">examene în curând</span><span class="chev">›</span></div></button>
       <button class="card red" onclick="showPage('boghean')"><div class="card-icon flip-horizontal">🎤</div><div><h2>BOGHEAN</h2><p>Concerte · Taskuri · Muzicieni · Transferuri</p></div><div class="card-meta"><span id="homeBogheanCount" class="count" style="color:var(--red-strong)">0</span><span class="meta-label">concerte</span><span id="homeBogheanTaskCount" class="count" style="color:var(--red-strong);height:32px;min-width:38px;font-size:17px">0</span><span class="meta-label">taskuri active</span><span class="chev">›</span></div></button>
       <button class="card purple" onclick="showPage('printing')"><div class="card-icon">🖨️</div><div><h2>3D PRINTING</h2><p>Comenzi · Stoc · Taskuri · Vânzări</p></div><div class="card-meta"><span id="homePrintingCount" class="count" style="color:var(--purple-strong)">0</span><span class="meta-label">comenzi active</span><span class="chev">›</span></div></button>
+      <button class="card blue" onclick="showPage('todo')"><div class="card-icon">☑️</div><div><h2>TO DO LIST</h2><p>Taskuri personale · De făcut · Finalizate</p></div><div class="card-meta"><span id="homeTodoCount" class="count" style="color:var(--blue-strong)">0</span><span class="meta-label">taskuri active</span><span class="chev">›</span></div></button>
       <button class="card yellow" onclick="showPage('ideas')"><div class="card-icon">💡</div><div><h2>IDEAS</h2><p>Notează rapid ideile care apar în orice moment</p></div><div class="card-meta"><span id="homeIdeasCount" class="count">0</span><span class="meta-label">idei</span><span class="chev">›</span></div></button>
       <button class="card gray" onclick="showPage('personal')"><div class="card-icon">👤</div><div><h2>PERSONAL</h2><p>În dezvoltare · Spațiu personal</p></div><div class="card-meta"><span id="homePersonalCount" class="count" style="color:var(--gray-strong)">0</span><span class="meta-label">elemente</span><span class="chev">›</span></div></button>
     </div>
@@ -111,6 +112,14 @@ button,input,textarea{font:inherit}
     <div class="section"><div class="section-title"><h3>To do</h3></div><div class="empty">Niciun task adăugat.</div></div>
   </section>
 
+  <section id="todo" class="view">
+    <div class="backbar"><button class="back" onclick="home()">‹</button><div class="page-title">☑️ TO DO LIST</div></div>
+    <div class="section"><div class="section-title"><h3>Taskuri</h3><span id="todoStatus" class="small"></span></div>
+      <div id="todoList"></div>
+      <button id="todoAddButton" type="button" onclick="openTodoForm()" aria-label="Adaugă task nou" style="display:flex;align-items:center;justify-content:center;width:100%;height:25vh;min-height:150px;max-height:240px;border:2px dashed #cbd5e1;border-radius:24px;background:#f7f9fc;color:#1e293b;font-size:90px;font-weight:250;cursor:pointer">+</button>
+    </div>
+  </section>
+
   <section id="personal" class="view">
     <div class="backbar"><button class="back" onclick="home()">‹</button><div class="page-title">👤 Personal</div></div>
     <div style="min-height:55vh;display:flex;flex-direction:column;align-items:center;justify-content:center">
@@ -125,6 +134,14 @@ button,input,textarea{font:inherit}
     <div class="section"><div class="section-title"><h3>Recente</h3></div><div id="ideaList"></div></div>
   </section>
 </main>
+
+<div id="todoOverlay" class="overlay" onclick="overlayBg(event,'todoOverlay')"><div class="sheet">
+  <div class="sheet-head"><h3 id="todoFormTitle">Task nou</h3><button class="close" onclick="closeOverlay('todoOverlay')">×</button></div>
+  <input id="todoEditId" type="hidden">
+  <textarea id="todoText" class="idea-input" placeholder="Scrie aici taskul..." style="min-height:120px"></textarea>
+  <button id="todoSaveButton" class="save" onclick="saveTodo()">SAVE</button>
+  <button id="todoDeleteButton" class="save" style="display:none;background:#e9343f" onclick="deleteTodo()">ȘTERGE TASKUL</button>
+</div></div>
 
 <div id="amtapExamOverlay" class="overlay" onclick="overlayBg(event,'amtapExamOverlay')"><div class="sheet">
   <div class="sheet-head"><h3 id="amtapExamFormTitle">Examen nou</h3><button class="close" onclick="closeOverlay('amtapExamOverlay')">×</button></div>
@@ -193,9 +210,9 @@ async function initCloud(){
  cloudReady=!!session;
  document.getElementById('cloudPanel').style.display=cloudReady?'none':'block';
  if(cloudReady){
-   await migrateLocalIdeas();await Promise.all([loadConcerts(),loadTransferPeople(),loadTransferPayments(),loadTasks(),loadPatents(),loadMusicEvents(),loadReceivables(),loadMouthpieceStock(),loadPrintingOrders(),loadAmtapData(),loadPersonalCounter(),loadIdeas()]);
+   await migrateLocalIdeas();await Promise.all([loadConcerts(),loadTransferPeople(),loadTransferPayments(),loadTasks(),loadPatents(),loadMusicEvents(),loadReceivables(),loadMouthpieceStock(),loadPrintingOrders(),loadAmtapData(),loadPersonalCounter(),loadIdeas(),loadTodos()]);
  } else {
-   concertCache=[];taskCache=[];patentCache=[];amtapExamCache=[];amtapStudentCache=[];amtapPieceCache=[];ideaCache=[];renderConcerts();renderTasks();renderPatents();renderAmtapExams();renderAmtapStudents();renderIdeas();
+   concertCache=[];taskCache=[];patentCache=[];amtapExamCache=[];amtapStudentCache=[];amtapPieceCache=[];ideaCache=[];todoCache=[];renderTodos();renderConcerts();renderTasks();renderPatents();renderAmtapExams();renderAmtapStudents();renderIdeas();
  }
 }
 async function connectCloud(){
@@ -457,7 +474,7 @@ async function deletePiece(){
 const roMonths=['ianuarie','februarie','martie','aprilie','mai','iunie','iulie','august','septembrie','octombrie','noiembrie','decembrie'];
 const roDays=['Duminică','Luni','Marți','Miercuri','Joi','Vineri','Sâmbătă'];
 function setDate(){const d=new Date(); document.getElementById('todayDate').textContent=`${roDays[d.getDay()]}, ${d.getDate()} ${roMonths[d.getMonth()]} ${d.getFullYear()}`}
-function showPage(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);if(id==='ideas'){if(cloudReady)loadIdeas();else renderIdeas();setTimeout(()=>document.getElementById('ideaText').focus(),120)}if(id==='amtap'&&cloudReady)loadAmtapData();if(id==='personal'&&cloudReady)loadPersonalCounter()}
+function showPage(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0);if(id==='ideas'){if(cloudReady)loadIdeas();else renderIdeas();setTimeout(()=>document.getElementById('ideaText').focus(),120)}if(id==='amtap'&&cloudReady)loadAmtapData();if(id==='personal'&&cloudReady)loadPersonalCounter();if(id==='todo'){if(cloudReady)loadTodos();else renderTodos()}}
 function home(){showPage('home')}
 function openSearch(){document.getElementById('searchOverlay').classList.add('open');setTimeout(()=>document.getElementById('searchInput').focus(),100);doSearch('')}
 function openAttention(){renderAttention();document.getElementById('attentionOverlay').classList.add('open')}
@@ -469,6 +486,7 @@ const searchData=[
  ['Concerte','Concerte · Venituri · Proiecte','music'],
  ['3D Printing','Comenzi · Stoc · Taskuri','printing'],
  ['Personal','Spațiu personal','personal'],
+ ['TO DO LIST','Taskuri · De făcut · Finalizate','todo'],
  ['Ideas','Note rapide','ideas']
 ];
 function doSearch(q){const el=document.getElementById('searchResults');const s=q.trim().toLowerCase();const items=(s?searchData.filter(x=>(x[0]+' '+x[1]).toLowerCase().includes(s)):searchData.slice(0,6));el.innerHTML=items.map(x=>`<div class="result" onclick="closeOverlay('searchOverlay');showPage('${x[2]}')"><strong>${x[0]}</strong><span class="small">${x[1]}</span></div>`).join('') || '<div class="empty" style="margin-top:14px">Nimic găsit.</div>'}
@@ -556,6 +574,60 @@ async function saveTransferGroup(concertId,category,button){
  setTimeout(()=>{if(button.isConnected){button.textContent=original;button.style.background='#e5f0ff'}},1400);
 }
 async function saveTransfer(concertId,personId){if(!cloudReady)return needCloud();const fee=Number(document.getElementById('tf'+personId).value||0),paid=Number(document.getElementById('tp'+personId).value||0);if(!Number.isFinite(fee)||!Number.isFinite(paid)||fee<0||paid<0||paid>fee)return alert('Sumele trebuie să fie pozitive, iar achitat nu poate depăși onorariul.');const {error}=await sb.from('boghean_transfer_payments').upsert({concert_id:concertId,person_id:personId,fee,paid},{onConflict:'owner_id,concert_id,person_id'});if(error)return alert(error.message);const {data:updated,error:readError}=await sb.from('boghean_transfer_payments').select('*').eq('concert_id',concertId).eq('person_id',personId).single();if(readError)return alert('Suma a fost salvată, dar nu s-a putut verifica: '+readError.message);transferPayments=transferPayments.filter(x=>!(String(x.concert_id)===String(concertId)&&String(x.person_id)===String(personId)));transferPayments.push(updated);const btn=document.activeElement;if(btn&&btn.tagName==='BUTTON'){const original=btn.textContent;btn.textContent='✓ Salvat';btn.style.background='#d9f1e4';setTimeout(()=>{if(btn.isConnected){btn.textContent=original;btn.style.background='#e5f0ff'}},1200)}const summary=transferSummary(concertId);const detailHeading=document.getElementById('transferDetailTotals');if(detailHeading)detailHeading.textContent='Total '+transferMoney(summary.total)+' · Achitat '+transferMoney(summary.paid)+' · Restant '+transferMoney(summary.total-summary.paid)}
+
+let todoCache=[];
+async function loadTodos(){
+ if(!cloudReady){todoCache=[];renderTodos();return}
+ const {data,error}=await sb.from('todo_items').select('*').order('created_at',{ascending:false});
+ if(error)return alert('Nu s-au încărcat taskurile: '+error.message);
+ todoCache=data||[];renderTodos();
+}
+function renderTodos(){
+ const el=document.getElementById('todoList'),counter=document.getElementById('homeTodoCount'),status=document.getElementById('todoStatus');
+ if(!el)return;
+ const active=todoCache.filter(t=>!t.is_done),done=todoCache.filter(t=>t.is_done);
+ if(counter)counter.textContent=active.length;
+ if(status)status.textContent=active.length+' active · '+done.length+' finalizate';
+ const row=t=>'<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;padding:15px 12px;border-radius:19px;background:'+(t.is_done?'#e8f7ee':'#fff3c9')+';border:1px solid '+(t.is_done?'#b9e4ca':'#f0d77a')+'"><button type="button" aria-label="'+(t.is_done?'Marchează nefinalizat':'Marchează finalizat')+'" onclick="toggleTodo('+t.id+')" style="flex:none;width:31px;height:31px;border-radius:50%;border:2px solid '+(t.is_done?'#17834a':'#9a7700')+';background:'+(t.is_done?'#17834a':'transparent')+';color:white;font-size:19px;line-height:1;cursor:pointer">'+(t.is_done?'✓':'')+'</button><div role="button" tabindex="0" onclick="openTodoForm('+t.id+')" onkeydown="if(event.key===\'Enter\')openTodoForm('+t.id+')" style="flex:1;min-width:0;white-space:pre-wrap;overflow-wrap:anywhere;cursor:pointer;'+(t.is_done?'text-decoration:line-through;color:#49765a':'')+'">'+escapeHtml(t.task_text)+'</div><button type="button" onclick="openTodoForm('+t.id+')" aria-label="Editează task" style="border:0;background:transparent;font-size:20px;padding:6px;cursor:pointer">✎</button></div>';
+ el.innerHTML=active.map(row).join('')+done.map(row).join('');
+}
+function openTodoForm(id){
+ const t=id==null?null:todoCache.find(x=>String(x.id)===String(id));
+ if(id!=null&&!t)return alert('Taskul nu a fost găsit.');
+ document.getElementById('todoEditId').value=t?t.id:'';
+ document.getElementById('todoText').value=t?t.task_text:'';
+ document.getElementById('todoFormTitle').textContent=t?'Editează taskul':'Task nou';
+ document.getElementById('todoDeleteButton').style.display=t?'block':'none';
+ document.getElementById('todoOverlay').classList.add('open');
+ setTimeout(()=>document.getElementById('todoText').focus(),100);
+}
+async function saveTodo(){
+ if(!cloudReady)return needCloud();
+ const id=document.getElementById('todoEditId').value,text=document.getElementById('todoText').value.trim(),btn=document.getElementById('todoSaveButton');
+ if(!text)return alert('Scrie textul taskului.');
+ btn.disabled=true;
+ const query=id?sb.from('todo_items').update({task_text:text,updated_at:new Date().toISOString()}).eq('id',id):sb.from('todo_items').insert({task_text:text});
+ const {data,error}=await query.select('*').single();btn.disabled=false;
+ if(error)return alert('Nu s-a salvat taskul: '+error.message);
+ if(id)todoCache=todoCache.map(t=>String(t.id)===String(id)?data:t);else todoCache.unshift(data);
+ closeOverlay('todoOverlay');renderTodos();
+}
+async function toggleTodo(id){
+ if(!cloudReady)return needCloud();
+ const t=todoCache.find(x=>String(x.id)===String(id));if(!t)return;
+ const {data,error}=await sb.from('todo_items').update({is_done:!t.is_done,updated_at:new Date().toISOString()}).eq('id',id).select('*').single();
+ if(error)return alert('Nu s-a actualizat taskul: '+error.message);
+ todoCache=todoCache.map(x=>String(x.id)===String(id)?data:x);renderTodos();
+}
+async function deleteTodo(){
+ if(!cloudReady)return needCloud();
+ const id=document.getElementById('todoEditId').value;if(!id)return;
+ if(!confirm('Ștergi definitiv acest task?'))return;
+ const {data,error}=await sb.from('todo_items').delete().eq('id',id).select('id');
+ if(error)return alert('Nu s-a șters taskul: '+error.message);
+ if(!data||data.length!==1)return alert('Ștergerea nu a fost confirmată.');
+ todoCache=todoCache.filter(t=>String(t.id)!==String(id));closeOverlay('todoOverlay');renderTodos();
+}
 
 function escapeHtml(s){return s.replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 setDate();renderIdeas();updateHomeCounts();initCloud();
