@@ -138,7 +138,7 @@ button,input,textarea{font:inherit}
 <div id="todoOverlay" class="overlay" onclick="overlayBg(event,'todoOverlay')"><div class="sheet">
   <div class="sheet-head"><h3 id="todoFormTitle">Task nou</h3><button class="close" onclick="closeOverlay('todoOverlay')">×</button></div>
   <input id="todoEditId" type="hidden">
-  <textarea id="todoText" class="idea-input" placeholder="Scrie aici taskul..." style="min-height:120px"></textarea>
+  <label for="todoText" class="small">Denumirea taskului</label><textarea id="todoText" class="idea-input" placeholder="Denumirea taskului..." style="min-height:65px"></textarea><label for="todoDetails" class="small" style="display:block;margin-top:12px">Detalii / Note (opțional)</label><textarea id="todoDetails" class="idea-input" placeholder="Adaugă informații și completări pe parcurs..." style="min-height:150px"></textarea>
   <button id="todoSaveButton" class="save" onclick="saveTodo()">SAVE</button>
   <button id="todoDeleteButton" class="save" style="display:none;background:#e9343f" onclick="deleteTodo()">ȘTERGE TASKUL</button>
 </div></div>
@@ -596,6 +596,7 @@ function openTodoForm(id){
  if(id!=null&&!t)return alert('Taskul nu a fost găsit.');
  document.getElementById('todoEditId').value=t?t.id:'';
  document.getElementById('todoText').value=t?t.task_text:'';
+ document.getElementById('todoDetails').value=t?(t.details||''):'';
  document.getElementById('todoFormTitle').textContent=t?'Editează taskul':'Task nou';
  document.getElementById('todoDeleteButton').style.display=t?'block':'none';
  document.getElementById('todoOverlay').classList.add('open');
@@ -603,10 +604,10 @@ function openTodoForm(id){
 }
 async function saveTodo(){
  if(!cloudReady)return needCloud();
- const id=document.getElementById('todoEditId').value,text=document.getElementById('todoText').value.trim(),btn=document.getElementById('todoSaveButton');
+ const id=document.getElementById('todoEditId').value,text=document.getElementById('todoText').value.trim(),details=document.getElementById('todoDetails').value.trim(),btn=document.getElementById('todoSaveButton');
  if(!text)return alert('Scrie textul taskului.');
  btn.disabled=true;
- const query=id?sb.from('todo_items').update({task_text:text,updated_at:new Date().toISOString()}).eq('id',id):sb.from('todo_items').insert({task_text:text});
+ const query=id?sb.from('todo_items').update({task_text:text,details:details,updated_at:new Date().toISOString()}).eq('id',id):sb.from('todo_items').insert({task_text:text,details:details});
  const {data,error}=await query.select('*').single();btn.disabled=false;
  if(error)return alert('Nu s-a salvat taskul: '+error.message);
  if(id)todoCache=todoCache.map(t=>String(t.id)===String(id)?data:t);else todoCache.unshift(data);
