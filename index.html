@@ -33,21 +33,26 @@ button,input,textarea{font:inherit}
 .card-icon{font-size:52px;line-height:1;filter:drop-shadow(0 5px 6px rgba(0,0,0,.12));text-align:center}.flip-horizontal{transform:scaleX(-1)}.card h2{font-size:24px;margin:0 0 7px;font-weight:850;letter-spacing:-.5px}.card p{font-size:15px;line-height:1.35;margin:0;color:#536078}.card.yellow p{color:rgba(255,255,255,.94)}
 .card-meta{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:60px}.count{min-width:46px;height:42px;padding:0 12px;border-radius:999px;display:grid;place-items:center;font-size:22px;font-weight:850;background:rgba(255,255,255,.55)}.meta-label{font-size:12px;line-height:1.15;text-align:center;color:#566176;max-width:70px}.yellow .meta-label{color:white}.chev{font-size:34px;font-weight:300;line-height:1;color:#3e4a5f;margin-left:4px}.yellow .chev{color:white}
 .view{display:none}.view.active{display:block}.backbar{display:flex;align-items:center;gap:12px;margin:4px 0 20px}.back{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:#f4f6f8;font-size:26px;cursor:pointer}.page-title{font-size:31px;font-weight:850;letter-spacing:-.8px}.section{margin:18px 0 24px}.section-title{display:flex;justify-content:space-between;align-items:center;margin:0 2px 10px}.section-title h3{font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:#7a8495;margin:0}.plus{border:0;background:#111;color:#fff;border-radius:50%;width:34px;height:34px;font-size:24px;line-height:1;cursor:pointer}.panel{background:#f7f8fa;border:1px solid #e9ecf0;border-radius:22px;padding:16px;margin-bottom:10px}
-/* Cardurile din istoricul concertelor sunt compacte; cele viitoare rămân normale. */
-#concertHistory .panel,
-#musicEventHistory .panel{padding:9px 11px;margin-bottom:6px;border-radius:14px;cursor:pointer}
-#concertHistory .panel .row,
-#musicEventHistory .panel .row{gap:8px}
-#concertHistory .panel .row-title,
-#musicEventHistory .panel .row-title{font-size:14px;line-height:1.2}
-#concertHistory .panel .small,
-#musicEventHistory .panel .small{font-size:12px;line-height:1.25;margin-top:3px}
-#concertHistory .panel .status{font-size:10px;padding:5px 7px}
-#musicEventHistory .panel .row > b{font-size:14px;flex:none}
-#concertHistory .panel .row > div,
-#musicEventHistory .panel .row > div{min-width:0;overflow-wrap:anywhere}
-#concertHistory .panel .row > div > div[style*="margin-top:6px"],
-#musicEventHistory .panel .row > div > div[style*="margin-top:6px"]{margin-top:4px!important;font-size:11px!important}
+/* Istorice compacte: suma și încasarea pe același rând, fără rând suplimentar. */
+#concertHistory .panel,#musicEventHistory .panel{
+  padding:7px 9px;margin-bottom:4px;border-radius:12px;min-height:44px;cursor:pointer
+}
+#concertHistory .history-top,#musicEventHistory .history-top,
+#concertHistory .history-bottom,#musicEventHistory .history-bottom{
+  display:flex;align-items:baseline;justify-content:space-between;gap:7px
+}
+#concertHistory .history-bottom,#musicEventHistory .history-bottom{margin-top:3px}
+#concertHistory .history-name,#musicEventHistory .history-name{
+  font-size:12px;line-height:1.2;font-weight:750;min-width:0;overflow-wrap:anywhere
+}
+#concertHistory .history-details,#musicEventHistory .history-details{
+  flex:1;min-width:0;font-size:10px;line-height:1.22;color:var(--muted);overflow-wrap:anywhere
+}
+#concertHistory .history-payment,#musicEventHistory .history-payment{
+  display:inline-flex;align-items:baseline;gap:6px;white-space:nowrap;flex:none;font-size:10px;font-weight:800
+}
+#concertHistory .history-payment b,#musicEventHistory .history-payment b{font-size:12px}
+#concertHistory .history-top .status{font-size:9px;padding:3px 5px;flex:none}
 .row{display:flex;align-items:center;justify-content:space-between;gap:12px}.row-title{font-weight:750}.small{font-size:13px;color:var(--muted);margin-top:5px;line-height:1.35}.status{font-size:12px;font-weight:800;padding:7px 10px;border-radius:999px;white-space:nowrap}.confirmed{background:#d8f4e4;color:#087844}.pending{background:#fff0b8;color:#8b6500}.tentative{background:#dbeaff;color:#245f9d}.cancelled{background:#ffe0e0;color:#a12828}.paid{background:#d8f4e4;color:#087844}.unpaid{background:#fff0b8;color:#8b6500}
 .legend{display:flex;gap:7px;flex-wrap:wrap;margin:4px 0 14px}.legend span{font-size:11px;padding:6px 9px;border-radius:999px;font-weight:700}
 .statgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat{background:#f6f7f9;border-radius:20px;padding:15px;border:1px solid #eaedf1}.stat strong{display:block;font-size:22px;margin-bottom:4px}.stat span{font-size:12px;color:var(--muted)}
@@ -271,18 +276,22 @@ function renderConcerts(){
  const el=document.getElementById('concertList'),hist=document.getElementById('concertHistory');if(!el||!hist)return;
  const today=new Date();today.setHours(0,0,0,0);
  const upcoming=concertCache.filter(x=>new Date(x.concert_date+'T12:00:00')>=today),past=concertCache.filter(x=>new Date(x.concert_date+'T12:00:00')<today);
- const card=x=>{
+ const card=(x,history=false)=>{
   const d=new Date(x.concert_date+'T12:00:00'),ds=d.toLocaleDateString('ro-RO',{day:'2-digit',month:'short'});
   const labels={confirmed:'CONFIRMAT',pending:'ÎN CONFIRMARE',tentative:'INDECIS',cancelled:'ANULAT'};
   const payBg=x.status==='cancelled'?'#f4f5f6':(x.is_paid?'#e8f7ee':'#fff3c9');
   const payBorder=x.status==='cancelled'?'#e5e7eb':(x.is_paid?'#b9e4ca':'#f0d77a');
   const payText=x.is_paid?'PRIMIT ✓':'DE PRIMIT';
   const payColor=x.is_paid?'#087d45':'#8a6700';
+  if(history){
+   const amount=Number(x.fee||0).toLocaleString('ro-RO');
+   return '<div class="panel" style="background:'+payBg+';border:1px solid '+payBorder+'" onclick="editConcert(\''+x.id+'\')"><div class="history-top"><span class="history-name">'+escapeHtml(ds+(x.city?' · '+x.city:''))+'</span><span class="status '+escapeHtml(x.status||'tentative')+'">'+(labels[x.status]||'INDECIS')+'</span></div><div class="history-bottom"><span class="history-details">'+escapeHtml([x.venue,x.event_name].filter(Boolean).join(' · ')||'Fără detalii')+'</span><span class="history-payment"><b>'+amount+'</b><span style="color:'+payColor+'">'+payText+'</span></span></div></div>';
+  }
   return '<div class="panel" style="background:'+payBg+';border:1px solid '+payBorder+'" onclick="editConcert(\''+x.id+'\')"><div class="row"><div><div class="row-title">'+escapeHtml(ds+(x.city?' · '+x.city:''))+'</div><div class="small">'+escapeHtml([x.venue,x.event_name].filter(Boolean).join(' · ')||'Fără detalii')+'</div><div style="margin-top:6px;font-size:12px;font-weight:800;color:'+payColor+'">'+payText+'</div></div><span class="status '+escapeHtml(x.status||'tentative')+'">'+(labels[x.status]||'INDECIS')+'</span></div></div>'
  };
- el.innerHTML=upcoming.length?upcoming.map(card).join(''):'<div class="empty">Niciun concert viitor.</div>';
+ el.innerHTML=upcoming.length?upcoming.map(x=>card(x)).join(''):'<div class="empty">Niciun concert viitor.</div>';
  const groups={};past.filter(x=>x.status!=='cancelled').forEach(x=>{const d=new Date(x.concert_date+'T12:00:00'),k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');(groups[k]||(groups[k]=[])).push(x)});
- hist.innerHTML=Object.keys(groups).sort().reverse().map(k=>{const a=groups[k],d=new Date(k+'-01T12:00:00'),total=a.reduce((sum,x)=>sum+Number(x.fee||0),0),primit=a.reduce((sum,x)=>sum+(x.is_paid?Number(x.fee||0):0),0),rest=total-primit;return '<div style="margin-bottom:18px"><div style="border-bottom:1px solid #e8ebf0;padding:0 2px 8px;margin-bottom:8px"><b style="display:block;text-transform:capitalize;margin-bottom:5px">'+d.toLocaleDateString('ro-RO',{month:'long',year:'numeric'})+'</b><div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;font-weight:700"><span>Total: '+total.toLocaleString('ro-RO')+'</span><span style="color:#087d45">Primit: '+primit.toLocaleString('ro-RO')+'</span><span style="color:#8a6700">De primit: '+rest.toLocaleString('ro-RO')+'</span></div></div>'+a.map(card).join('')+'</div>'}).join('')||'<div class="empty">Istoricul este gol.</div>';
+ hist.innerHTML=Object.keys(groups).sort().reverse().map(k=>{const a=groups[k],d=new Date(k+'-01T12:00:00'),total=a.reduce((sum,x)=>sum+Number(x.fee||0),0),primit=a.reduce((sum,x)=>sum+(x.is_paid?Number(x.fee||0):0),0),rest=total-primit;return '<div style="margin-bottom:18px"><div style="border-bottom:1px solid #e8ebf0;padding:0 2px 8px;margin-bottom:8px"><b style="display:block;text-transform:capitalize;margin-bottom:5px">'+d.toLocaleDateString('ro-RO',{month:'long',year:'numeric'})+'</b><div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;font-weight:700"><span>Total: '+total.toLocaleString('ro-RO')+'</span><span style="color:#087d45">Primit: '+primit.toLocaleString('ro-RO')+'</span><span style="color:#8a6700">De primit: '+rest.toLocaleString('ro-RO')+'</span></div></div>'+a.map(x=>card(x,true)).join('')+'</div>'}).join('')||'<div class="empty">Istoricul este gol.</div>';
  updateAttentionBadge();
 }function getUnpaidPastConcerts(){
  const today=new Date();today.setHours(0,0,0,0);
@@ -345,10 +354,15 @@ function renderMusicEvents(){
  const el=document.getElementById('musicEventList'),hist=document.getElementById('musicEventHistory');if(!el||!hist)return;
  const today=new Date();today.setHours(0,0,0,0);
  const upcoming=musicEventCache.filter(x=>new Date(x.event_date+'T12:00:00')>=today).sort((a,b)=>a.event_date.localeCompare(b.event_date)),past=musicEventCache.filter(x=>new Date(x.event_date+'T12:00:00')<today).sort((a,b)=>b.event_date.localeCompare(a.event_date));
- const card=x=>{const d=new Date(x.event_date+'T12:00:00'),paid=!!x.is_paid;return '<div class="panel" style="background:'+(paid?'#e8f7ee':'#fff3c9')+';border:1px solid '+(paid?'#b9e4ca':'#f0d77a')+'" onclick="editMusicEvent(\''+x.id+'\')"><div class="row"><div><div class="row-title">'+escapeHtml(x.event_name)+'</div><div class="small">'+d.toLocaleDateString('ro-RO',{day:'2-digit',month:'short',year:'numeric'})+(x.location?' · '+escapeHtml(x.location):'')+(x.performer?' · '+escapeHtml(x.performer):'')+(x.is_boghean?' · Boghean':'')+'</div><div style="margin-top:6px;font-size:12px;font-weight:800;color:'+(paid?'#087d45':'#8a6700')+'">'+(paid?'PRIMIT ✓':'DE PRIMIT')+'</div></div><b>'+Number(x.fee||0).toLocaleString('ro-RO')+'</b></div></div>'};
- el.innerHTML=upcoming.length?upcoming.map(card).join(''):'<div class="empty">Niciun concert viitor.</div>';
+ const card=(x,history=false)=>{const d=new Date(x.event_date+'T12:00:00'),paid=!!x.is_paid;
+ if(history){
+  const amount=Number(x.fee||0).toLocaleString('ro-RO');
+  return '<div class="panel" style="background:'+(paid?'#e8f7ee':'#fff3c9')+';border:1px solid '+(paid?'#b9e4ca':'#f0d77a')+'" onclick="editMusicEvent(\''+x.id+'\')"><div class="history-top"><span class="history-name">'+escapeHtml(x.event_name)+'</span><span class="history-payment"><b>'+amount+'</b><span style="color:'+(paid?'#087d45':'#8a6700')+'">'+(paid?'PRIMIT ✓':'DE PRIMIT')+'</span></span></div><div class="history-bottom"><span class="history-details">'+d.toLocaleDateString('ro-RO',{day:'2-digit',month:'short',year:'numeric'})+(x.location?' · '+escapeHtml(x.location):'')+(x.performer?' · '+escapeHtml(x.performer):'')+(x.is_boghean?' · Boghean':'')+'</span></div></div>';
+ }
+ return '<div class="panel" style="background:'+(paid?'#e8f7ee':'#fff3c9')+';border:1px solid '+(paid?'#b9e4ca':'#f0d77a')+'" onclick="editMusicEvent(\''+x.id+'\')"><div class="row"><div><div class="row-title">'+escapeHtml(x.event_name)+'</div><div class="small">'+d.toLocaleDateString('ro-RO',{day:'2-digit',month:'short',year:'numeric'})+(x.location?' · '+escapeHtml(x.location):'')+(x.performer?' · '+escapeHtml(x.performer):'')+(x.is_boghean?' · Boghean':'')+'</div><div style="margin-top:6px;font-size:12px;font-weight:800;color:'+(paid?'#087d45':'#8a6700')+'">'+(paid?'PRIMIT ✓':'DE PRIMIT')+'</div></div><b>'+Number(x.fee||0).toLocaleString('ro-RO')+'</b></div></div>'};
+ el.innerHTML=upcoming.length?upcoming.map(x=>card(x)).join(''):'<div class="empty">Niciun concert viitor.</div>';
  const groups={};past.forEach(x=>{const d=new Date(x.event_date+'T12:00:00'),k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');(groups[k]||(groups[k]=[])).push(x)});
- hist.innerHTML=Object.keys(groups).sort().reverse().map(k=>{const a=groups[k],d=new Date(k+'-01T12:00:00'),total=a.reduce((sum,x)=>sum+Number(x.fee||0),0),primit=a.reduce((sum,x)=>sum+(x.is_paid?Number(x.fee||0):0),0),rest=total-primit;return '<div style="margin-bottom:18px"><div style="border-bottom:1px solid #e8ebf0;padding:0 2px 8px;margin-bottom:8px"><b style="display:block;text-transform:capitalize;margin-bottom:5px">'+d.toLocaleDateString('ro-RO',{month:'long',year:'numeric'})+'</b><div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;font-weight:700"><span>Total: '+total.toLocaleString('ro-RO')+'</span><span style="color:#087d45">Primit: '+primit.toLocaleString('ro-RO')+'</span><span style="color:#8a6700">De primit: '+rest.toLocaleString('ro-RO')+'</span></div></div>'+a.map(card).join('')+'</div>'}).join('')||'<div class="empty">Istoricul este gol.</div>';
+ hist.innerHTML=Object.keys(groups).sort().reverse().map(k=>{const a=groups[k],d=new Date(k+'-01T12:00:00'),total=a.reduce((sum,x)=>sum+Number(x.fee||0),0),primit=a.reduce((sum,x)=>sum+(x.is_paid?Number(x.fee||0):0),0),rest=total-primit;return '<div style="margin-bottom:18px"><div style="border-bottom:1px solid #e8ebf0;padding:0 2px 8px;margin-bottom:8px"><b style="display:block;text-transform:capitalize;margin-bottom:5px">'+d.toLocaleDateString('ro-RO',{month:'long',year:'numeric'})+'</b><div style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;font-weight:700"><span>Total: '+total.toLocaleString('ro-RO')+'</span><span style="color:#087d45">Primit: '+primit.toLocaleString('ro-RO')+'</span><span style="color:#8a6700">De primit: '+rest.toLocaleString('ro-RO')+'</span></div></div>'+a.map(x=>card(x,true)).join('')+'</div>'}).join('')||'<div class="empty">Istoricul este gol.</div>';
 }
 function openMusicEventForm(){['musicEventId','musicEventName','musicEventDate','musicEventLocation','musicEventPerformer','musicEventFee'].forEach(id=>document.getElementById(id).value='');document.getElementById('musicEventBoghean').checked=false;document.getElementById('musicEventFormTitle').textContent='Concert nou';document.getElementById('deleteMusicEventBtn').style.display='none';document.getElementById('musicEventPaidBtn').style.display='none';document.getElementById('musicEventOverlay').classList.add('open')}
 function editMusicEvent(id){const x=musicEventCache.find(v=>String(v.id)===String(id));if(!x)return;document.getElementById('musicEventId').value=x.id;document.getElementById('musicEventName').value=x.event_name;document.getElementById('musicEventDate').value=x.event_date;document.getElementById('musicEventLocation').value=x.location||'';document.getElementById('musicEventPerformer').value=x.performer||'';document.getElementById('musicEventBoghean').checked=!!x.is_boghean;document.getElementById('musicEventFee').value=x.fee||'';document.getElementById('musicEventFormTitle').textContent='Modifică concertul';document.getElementById('deleteMusicEventBtn').style.display='block';const mpb=document.getElementById('musicEventPaidBtn');mpb.style.display='block';mpb.textContent=x.is_paid?'PRIMIT ✓':'PRIMIT';mpb.style.background=x.is_paid?'#d9f1e4':'#fff0b8';mpb.style.color=x.is_paid?'#087d45':'#7a5b00';mpb.disabled=false;document.getElementById('musicEventOverlay').classList.add('open')}
